@@ -1,4 +1,10 @@
+<div align="center">
+
 # AoE4 Strategyzer
+
+<img src="Images/Title-Image-AoE4-Strategyzer.png" alt="AoE4 Strategyzer" width="640">
+
+</div>
 
 Desktop app for Age of Empires IV strategy management — build orders, civilization profiles, matchup notes, map tierlists and strategic quotes, built with [Tauri 2](https://tauri.app) (Rust backend, vanilla JavaScript frontend).
 
@@ -67,4 +73,4 @@ CachyOS/             Linux install documentation
 
 ## License
 
-Not specified yet — all rights reserved until a license is added.
+Released under the [MIT License](LICENSE).
