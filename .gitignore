@@ -1,0 +1,40 @@
+# ===== Build artifacts =====
+# Cargo/Tauri build directory (several GB)
+Tauri UI/target/
+
+# Tauri generated schemas (regenerated on build)
+Tauri UI/gen/
+
+# Built binaries and installers
+*.exe
+*.msi
+*.appimage
+*.deb
+*.rpm
+*.pkg.tar.zst
+*.AppImage
+
+# ===== Editor / tool settings =====
+.claude/
+.zed/
+.vscode/
+.idea/
+
+# ===== User-generated runtime data (never shipped/overwritten) =====
+Tauri UI/frontend/build-order-data/*
+Tauri UI/frontend/civ-data/*
+Tauri UI/frontend/matchup/*
+Tauri UI/frontend/tierlist/*
+Tauri UI/frontend/maps/maps-data.json
+# keep the folder structure
+!Tauri UI/frontend/build-order-data/.gitkeep
+!Tauri UI/frontend/civ-data/.gitkeep
+!Tauri UI/frontend/matchup/.gitkeep
+!Tauri UI/frontend/tierlist/.gitkeep
+!Tauri UI/frontend/maps/.gitkeep
+
+# ===== OS / misc junk =====
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini

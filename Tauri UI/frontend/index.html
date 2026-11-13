@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age of Empires IV Strategyzer</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="Images/AoE-Strategos-Placeholder-Icon-Logo_Placeholder-Favicon.png">
+    <link rel="shortcut icon" type="image/png" href="Images/AoE-Strategos-Placeholder-Icon-Logo_Placeholder-Favicon.png">
+    <link rel="apple-touch-icon" href="Images/AoE-Strategos-Placeholder-Icon-Logo_Placeholder-Favicon.png">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-container">
+                <div class="header-left">
+                    <h1>Age of Empires IV Strategyzer</h1>
+                    <h3>Make your Choice to achieve Victory!</h3>
+                </div>
+                <div class="header-right">
+                    <div class="theme-toggle" role="group" aria-label="App theme">
+                        <button class="theme-btn active" data-theme="classic-white" onclick="setAppTheme('classic-white')" title="Light theme, maximum contrast">Classic White</button>
+                        <button class="theme-btn" data-theme="parchment" onclick="setAppTheme('parchment')" title="Warm parchment theme">Parchment</button>
+                        <button class="theme-btn" data-theme="bayeux-blue" onclick="setAppTheme('bayeux-blue')" title="Dark navy theme with tapestry lines and gold headings">Bayeux Blue</button>
+                    </div>
+                    <img src="Icons/Titleimage_web.png" alt="AoE4 Strategy" class="header-image">
+                </div>
+            </div>
+        </header>
+        
+        <nav>
+            <button class="nav-btn active" onclick="showSection('home')">Home</button>
+            <button class="nav-btn" onclick="showSection('matchup')">Matchup</button>
+            <button class="nav-btn" onclick="showSection('strategy')">New Build Order</button>
+            <button class="nav-btn" onclick="showSection('build-orders')">Build Order Library</button>
+            <!-- LEGACY: Local BO Creator and Viewer tabs removed from navigation but code kept for future use -->
+            <button class="nav-btn" onclick="showSection('civs')">Civs</button>
+            <button class="nav-btn" onclick="showSection('tierlist')">Tierlist</button>
+            <button class="nav-btn" onclick="showSection('maps')">Maps</button>
+        </nav>
+        
+        <main>
+            <!-- Home Section -->
+            <section id="home" class="section active">
+                <div class="welcome-message">
+                    <h2 id="welcome-message-id">Welcome to AoE4 Strategyzer</h2>
+                    <br>
+                    <p>Your distinguished strategic advisor for Age of Empires IV: Identify the key challenges in front of you and deliberate wisely upon the means to surmount them!</p>
+                    <br>
+                    <p>Regard a build order as merely the opening gambit of a grand campaign. Remember well: the unforeseen stratagems of your adversary may yet confound your plans! Therefore, maintain vigilant reconnaissance, adapt with prudence, and seize the initiative to outmanoeuvre your foe.</p>
+                </div>
+                <div class="quick-match-setup">
+                    <h3>Match Setup</h3>
+                    <div class="setup-grid">
+                        <div class="setup-item">
+                            <label for="my-civ">My Civilization</label>
+                            <div class="custom-dropdown" id="my-civ-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('my-civ')">
+                                    <span id="my-civ-text">Select your civ...</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="my-civ-options">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="my-civ" value="">
+                        </div>
+                        <div class="setup-item">
+                            <label for="opponent-civ">Opponent Civilization</label>
+                            <div class="custom-dropdown" id="opponent-civ-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('opponent-civ')">
+                                    <span id="opponent-civ-text">Select opponent civ...</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="opponent-civ-options">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="opponent-civ" value="">
+                        </div>
+                        <div class="setup-item">
+                            <label for="map-select">Map</label>
+                            <div class="custom-dropdown" id="map-select-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('map-select')">
+                                    <span id="map-select-text">Select map...</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="map-select-options">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="map-select" value="">
+                        </div>
+                        <div class="setup-item">
+                            <label for="map-type">Map Type</label>
+                            <div class="custom-dropdown" id="map-type-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('map-type')">
+                                    <span id="map-type-text">Select map type...</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="map-type-options">
+                                    <div class="dropdown-option" onclick="selectMapType('', 'Select map type...')">Select map type...</div>
+                                    <div class="dropdown-option" onclick="selectMapType('land-open', 'Land Open')">Land Open</div>
+                                    <div class="dropdown-option" onclick="selectMapType('land-narrow', 'Land Narrow')">Land Narrow</div>
+                                    <div class="dropdown-option" onclick="selectMapType('hybrid', 'Hybrid')">Hybrid</div>
+                                    <div class="dropdown-option" onclick="selectMapType('water', 'Water')">Water</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="map-type" value="">
+                        </div>
+                    </div>
+                    
+                    <div id="map-info-grid" class="map-info-grid hidden">
+                        <h4>Map Info</h4>
+                        <div class="map-info-content">
+                            <div class="map-details">
+                                <div class="map-detail-item" id="map-user-notes-section" style="display: none;">
+                                    <div class="map-detail-label">Map Notes</div>
+                                    <div class="map-detail-value" id="map-user-notes-value"></div>
+                                </div>
+                                <div class="map-detail-item" id="map-sheep-pattern-section" style="display: none;">
+                                    <div class="map-detail-label">Sheep Pattern</div>
+                                    <div class="map-detail-value" id="map-sheep-pattern-value"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="map-ranked-tierlist-section" class="map-tierlist-summary" style="display: none;">
+                                <div class="map-detail-label">Ranked Tierlist</div>
+                                <div class="tierlist-compact" id="map-ranked-tierlist-display"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Matchup Info Display -->
+                    <div id="matchup-info-grid" class="matchup-info-grid hidden">
+                        <h4>Matchup Information</h4>
+                        <div class="matchup-info-content">
+                            <!-- Build Orders Section -->
+                            
+                            <!-- Strategies Section -->
+                            <div id="matchup-strategies-section" class="matchup-section" style="display: none;">
+                                <div class="matchup-section-label">Strategies</div>
+                                <ul id="matchup-strategies-list" class="matchup-list"></ul>
+                            </div>
+                            
+                            <!-- Tactics Section -->
+                            <div id="matchup-tactics-section" class="matchup-section" style="display: none;">
+                                <div class="matchup-section-label">Tactics</div>
+                                <ul id="matchup-tactics-list" class="matchup-list"></ul>
+                            </div>
+                           
+                            <div id="matchup-build-orders-section" class="matchup-section" style="display: none;">
+                                <div class="matchup-section-label">Recommended Build Orders</div>
+                                <div id="matchup-recommended-build-orders"></div>
+                            </div>
+ 
+                            <!-- Attention Points Section -->
+                            <div id="matchup-attention-section" class="matchup-section" style="display: none;">
+                                <div class="matchup-section-label">Attention Points</div>
+                                <ul id="matchup-attention-list" class="matchup-list attention-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="strategy-result" class="strategy-result hidden">
+                    <!-- Strategy recommendations will appear here -->
+                </div>
+                
+                <div class="strategic-quotes">
+                    <h3>The Essence of Strategy</h3>
+                    <div class="quotes-container">
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy is the necessary response to the inescapable reality of limited resources. No entity, regardless of size, has unlimited resources. Strategy, therefore, is about making choices on how we will concentrate our limited resources to achieve competitive advantage. All else follows from there."
+                            </blockquote>
+                            <cite>— Von Clausewitz according to Pieterson</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy is choice" & "Set of choices about winning."
+                            </blockquote>
+                            <cite>— Roger Martin</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Everyone has a plan 'till they get punched in the mouth."
+                            </blockquote>
+                            <cite>— Mike Tyson</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "A strategy is a way through a difficulty, an approach to overcoming an obstacle, a response to a challenge. If the challenge is not defined, it is difficult or impossible to assess the quality of the strategy. And, if you cannot assess that, you cannot reject a bad strategy or improve a good one."
+                            </blockquote>
+                            <cite>— Richard Rumelt</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "The supreme art of war is to subdue the enemy without fighting."
+                            </blockquote>
+                            <cite>— Sun Tzu</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "All warfare is based on deception. Hence, when we are able to attack, we must seem unable; when using our forces, we must appear inactive; when we are near, we must make the enemy believe we are far away; when far away, we must make him believe we are near."
+                            </blockquote>
+                            <cite>— Sun Tzu</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "If you know the enemy and know yourself, you need not fear the result of a hundred battles."
+                            </blockquote>
+                            <cite>— Sun Tzu</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy is the use of the engagement for the purpose of the war."
+                            </blockquote>
+                            <cite>— Carl von Clausewitz</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Tactics teaches the use of armed forces in the engagement; strategy, the use of engagements for the object of the war."
+                            </blockquote>
+                            <cite>— Carl von Clausewitz</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "War is nothing but a continuation of politics with the admixture of other means."
+                            </blockquote>
+                            <cite>— Carl von Clausewitz</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "The talent of the strategist is to identify the decisive point and to concentrate everything on it, removing forces from secondary fronts and ignoring lesser objectives."
+                            </blockquote>
+                            <cite>— Carl von Clausewitz</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy is the art of making war upon the map, and comprehends the whole theater of operations."
+                            </blockquote>
+                            <cite>— Antoine-Henri Jomini</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "The fundamental principle of war is to concentrate the mass of your forces against fractions of the enemy."
+                            </blockquote>
+                            <cite>— Antoine-Henri Jomini</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy is a system of expedients; it is more than a mere scholarly discipline."
+                            </blockquote>
+                            <cite>— Helmuth von Moltke the Elder</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy is a system of makeshifts. It is more than a science. It is bringing knowledge to bear on practical life, the further elaboration of an original guiding idea under constantly changing circumstances. It is the art of acting under the pressure of the most demanding conditions."
+                            </blockquote>
+                            <cite>— Helmuth von Moltke the Elder</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "No plan of operations reaches with any certainty beyond the first encounter with the enemy's main force."
+                            </blockquote>
+                            <cite>— Helmuth von Moltke the Elder</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Throughout the ages, effective results in war have rarely been attained unless the approach has had such indirectness as to ensure the opponent's unreadiness to meet it… In strategy, the longest way round is often the shortest way home."
+                            </blockquote>
+                            <cite>— B.H. Liddell Hart</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "The art of distributing and applying military means to fulfill the ends of policy."
+                            </blockquote>
+                            <cite>— B.H. Liddell Hart</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy has for its purpose the reduction of fighting to the slenderest possible proportions."
+                            </blockquote>
+                            <cite>— B.H. Liddell Hart</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "What is strategy? A mental tapestry of changing intentions for harmonizing and focusing our efforts as a basis for realizing some aim or purpose in an unfolding and often unforeseen world of many bewildering events and many contending interests."
+                            </blockquote>
+                            <cite>— John Boyd</cite>
+                        </div>
+                        
+                        <div class="quote">
+                            <blockquote>
+                                "Strategy is the art of the dialectic of force or, more precisely, the art of the dialectic of two opposing wills using force to resolve their dispute."
+                            </blockquote>
+                            <cite>— André Beaufre</cite>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Strategy Assignment Section -->
+            <section id="strategy" class="section">
+                <h2>New Build Orders</h2>
+
+                
+                <!-- Build Order Type Selection -->
+                <div class="build-order-type-selector">
+                    <h3>How would you like to add a Build Order?</h3>
+                    <div class="type-selection-buttons">
+                        <button id="btn-create-local" class="type-selection-btn active" onclick="selectBuildOrderType('create-local')">
+                            <div class="type-icon"><img src="Icons/Create-Local-Build-Order-Icon-_png8.png" alt="Create Local"></div>
+                            <div class="type-title">Create Local</div>
+                            <div class="type-subtitle">Build Order</div>
+                        </button>
+                        <button id="btn-external" class="type-selection-btn" onclick="selectBuildOrderType('external')">
+                            <div class="type-icon"><img src="Icons/Create-External-Build-Order-Icon_png8.png" alt="External"></div>
+                            <div class="type-title">External</div>
+                            <div class="type-subtitle">Build Order (from URL)</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Create Local Build Order Form -->
+                <div id="create-local-form" class="build-order-form-container">
+                    <div class="build-order-form">
+                        <div class="form-grid">
+                            <div class="form-item">
+                                <label for="local-civ-select">Civilization</label>
+                                <div class="custom-dropdown" id="local-civ-select-dropdown">
+                                    <div class="dropdown-selected" onclick="toggleCustomDropdown('local-civ-select')">
+                                        <span id="local-civ-select-text">Select civilization...</span>
+                                        <span class="dropdown-arrow">▼</span>
+                                    </div>
+                                    <div class="dropdown-options" id="local-civ-select-options">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                                <input type="hidden" id="local-civ-select" value="">
+                            </div>
+                            <div class="form-item">
+                                <label for="local-build-name">Build Order Name</label>
+                                <input type="text" id="local-build-name" class="form-input" placeholder="e.g., Fast Castle">
+                            </div>
+                            <div class="form-item full-width">
+                                <label for="local-build-description">Description (optional)</label>
+                                <textarea id="local-build-description" class="form-input" rows="2" placeholder="Describe the purpose and timing of this build order..."></textarea>
+                            </div>
+                            <div class="form-item full-width type-field">
+                                <div class="group-label">Type</div>
+                                <div class="type-checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Rush"> Rush</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Dark Age Aggression"> Dark Age Aggression</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Boom"> Boom</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Fast Castle"> Fast Castle</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Fast Imperial"> Fast Imperial</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Timing Attack"> Timing Attack</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Cheese"> Cheese</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="local-bo-type" value="Custom" onchange="toggleCustomTypeInput(this)"> Custom</label>
+                                    <input type="text" id="local-custom-type-input" class="form-input custom-type-input" placeholder="Own category..." style="display: none; max-width: 240px;">
+                                </div>
+                            </div>
+                            <div class="form-item full-width">
+                                <div class="group-label">Map Types</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="local-map-type" value="land-open"> Land Open
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="local-map-type" value="land-narrow"> Land Narrow
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="local-map-type" value="hybrid"> Hybrid
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="local-map-type" value="water"> Water
+                                    </label>
+                            </div>
+                            <div class="form-item full-width">
+                                <div class="group-label">Choose Against (Opponent Civilization)</div>
+                                <div id="local-opponent-checkboxes" class="checkbox-group">
+                                    <!-- Will be populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Build Order Steps Table -->
+                        <div class="build-order-creator">
+                            <h4>Build Order Steps</h4>
+                            <div class="creator-controls">
+                                <button class="btn-secondary btn-small" onclick="addStandardRowLocal()">Add Standard Row</button>
+                                <button class="btn-secondary btn-small" onclick="addCustomRowLocal()">Add Custom Row</button>
+                                <button class="btn-secondary btn-small" onclick="addAgeUpRowLocal()">Add Age Up</button>
+                                <button class="btn-secondary btn-small" onclick="addMultipleRowsLocal()">Add 5 Rows</button>
+                            </div>
+                            
+                            <div class="build-order-table-container">
+                                <table class="build-order-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="60">#</th>
+                                            <th width="80">Time</th>
+                                            <th width="100" class="resource-header food">
+                                                <img src="Icons/foodicon.png" alt="Food" class="resource-icon" onerror="this.style.display='none'">
+                                            </th>
+                                            <th width="100" class="resource-header wood">
+                                                <img src="Icons/woodicon.png" alt="Wood" class="resource-icon" onerror="this.style.display='none'">
+                                            </th>
+                                            <th width="100" class="resource-header gold">
+                                                <img src="Icons/goldicon.png" alt="Gold" class="resource-icon" onerror="this.style.display='none'">
+                                            </th>
+                                            <th width="100" class="resource-header stone">
+                                                <img src="Icons/stoneicon.png" alt="Stone" class="resource-icon" onerror="this.style.display='none'">
+                                            </th>
+                                            <th>Notes</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="local-build-order-tbody">
+                                        <!-- Rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="saveLocalBuildOrder()">Save Build Order</button>
+                            <button class="btn-secondary" onclick="clearLocalBuildOrder()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- External Build Order Form -->
+                <div id="external-form" class="build-order-form-container" style="display: none;">
+                    <div class="build-order-form">
+                        <div class="form-grid">
+                            <div class="form-item">
+                                <label for="external-civ-select">Your Civilization</label>
+                                <div class="custom-dropdown" id="external-civ-select-dropdown">
+                                    <div class="dropdown-selected" onclick="toggleCustomDropdown('external-civ-select')">
+                                        <span id="external-civ-select-text">Select civilization...</span>
+                                        <span class="dropdown-arrow">▼</span>
+                                    </div>
+                                    <div class="dropdown-options" id="external-civ-select-options">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                                <input type="hidden" id="external-civ-select" value="">
+                            </div>
+                            <div class="form-item">
+                                <label for="external-build-title">Build Order Title</label>
+                                <input type="text" id="external-build-title" class="form-input" placeholder="e.g., Fast Pro Scouts">
+                            </div>
+                            <div class="form-item">
+                                <label for="external-build-url">Build Order URL</label>
+                                <input type="url" id="external-build-url" class="form-input" placeholder="https://aoe4guides.com/builds/...">
+                            </div>
+                            <div class="form-item full-width">
+                                <label>Type</label>
+                                <div class="type-checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Rush"> Rush</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Dark Age Aggression"> Dark Age Aggression</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Boom"> Boom</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Fast Castle"> Fast Castle</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Fast Imperial"> Fast Imperial</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Timing Attack"> Timing Attack</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Cheese"> Cheese</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="external-bo-type" value="Custom" onchange="toggleExternalCustomTypeInput(this)"> Custom</label>
+                                    <input type="text" id="external-custom-type-input" class="form-input custom-type-input" placeholder="Own category..." style="display: none; max-width: 240px;">
+                                </div>
+                            </div>
+                            <div class="form-item full-width">
+                                <div class="group-label">Map Types</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="external-map-type" value="land-open"> Land Open
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="external-map-type" value="land-narrow"> Land Narrow
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="external-map-type" value="hybrid"> Hybrid
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="external-map-type" value="water"> Water
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-item full-width">
+                                <div class="group-label">Choose Against (Opponent Civilization)</div>
+                                <div id="external-opponent-checkboxes" class="checkbox-group">
+                                    <!-- Will be populated by JS -->
+                                </div>
+                            </div>
+                            <div class="form-item full-width">
+                                <label for="external-build-notes">User Notes (optional)</label>
+                                <textarea id="external-build-notes" class="form-input" rows="3" placeholder="Add any notes about this build order..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="addExternalBuildOrder()">Add Build Order</button>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </section>
+            
+            <!-- Build Orders Section -->
+            <section id="build-orders" class="section">
+                <h2>Build Orders</h2>
+
+                <div class="build-orders-filter">
+                    <div class="filter-controls">
+                        <div class="filter-field">
+                            <label class="filter-label" for="filter-civ-select">Filter by Civilization</label>
+                            <div class="custom-dropdown" id="filter-civ-select-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('filter-civ-select')">
+                                    <span id="filter-civ-select-text">All Civilizations</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="filter-civ-select-options">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="filter-civ-select" value="">
+                        </div>
+                        <div class="filter-field">
+                            <label class="filter-label" for="filter-active-select">Filter by Status</label>
+                            <div class="custom-dropdown" id="filter-active-select-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('filter-active-select')">
+                                    <span id="filter-active-select-text">All Build Orders</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="filter-active-select-options">
+                                    <div class="dropdown-option" onclick="selectFilterStatus('', 'All Build Orders')">All Build Orders</div>
+                                    <div class="dropdown-option" onclick="selectFilterStatus('active', 'Active Only')">Active Only</div>
+                                    <div class="dropdown-option" onclick="selectFilterStatus('inactive', 'Inactive Only')">Inactive Only</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="filter-active-select" value="">
+                        </div>
+                        <div class="filter-field">
+                            <label class="filter-label" for="sort-build-orders">Sort by</label>
+                            <select id="sort-build-orders" class="sort-select" onchange="onSortKeyChange()">
+                                <option value="name">Name (A-Z)</option>
+                                <option value="type">Type</option>
+                                <option value="mapType">Map Type</option>
+                                <option value="opponent">vs. Civ</option>
+                                <option value="ageUp">Age Up Time</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn-secondary" onclick="toggleBoFilterDropdown('bo-export-dropdown')">Export &#9662;</button>
+                            <button class="btn-secondary" onclick="toggleBoFilterDropdown('bo-import-dropdown')">Import &#9662;</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-panel-row" id="bo-filter-panel-row" style="display: none;">
+
+                        <div id="bo-value-filter-panel" class="bo-filter-panel" style="display: none;">
+                            <div class="bo-value-filter-header">
+                                <h4 id="bo-value-filter-title">Filter</h4>
+                                <label class="bo-select-item bo-select-all"><input type="checkbox" id="bo-value-select-all" onchange="toggleBoValueFilterAll(this.checked)"> Select All</label>
+                            </div>
+                            <div class="bo-select-list" id="bo-value-filter-list"></div>
+                        </div>
+
+                        <div id="bo-export-dropdown" class="bo-filter-panel" style="display: none;">
+                            <h4>Export Build Orders</h4>
+                            <div class="dropdown-field">
+                                <label for="bo-export-scope">Scope</label>
+                                <select id="bo-export-scope" onchange="renderBoExportList()">
+                                    <option value="current">Current civilization</option>
+                                    <option value="all">All civilizations</option>
+                                </select>
+                            </div>
+                            <div class="dropdown-field">
+                                <div class="group-label">Build Orders</div>
+                                <div class="bo-select-list" id="bo-export-list"></div>
+                            </div>
+                            <div class="dropdown-field bo-field-inline">
+                                <input type="checkbox" id="bo-export-include-inactive" checked>
+                                <label for="bo-export-include-inactive">Include inactive</label>
+                            </div>
+                            <button class="btn-primary" onclick="exportSelectedBuildOrders()">Export</button>
+                        </div>
+
+                        <div id="bo-import-dropdown" class="bo-filter-panel" style="display: none;">
+                            <h4>Import Build Orders</h4>
+                            <div class="dropdown-field">
+                                <label for="bo-import-mode">Duplicates</label>
+                                <select id="bo-import-mode">
+                                    <option value="overwrite">Overwrite duplicates</option>
+                                    <option value="rename">Rename duplicates</option>
+                                    <option value="skip">Skip duplicates</option>
+                                </select>
+                            </div>
+                            <input type="file" id="bo-import-file-input" accept=".json" multiple style="display: none;" onchange="handleBoImportFiles(event)">
+                            <button class="btn-secondary" onclick="document.getElementById('bo-import-file-input').click()">Choose file(s)&hellip;</button>
+                            <div class="bo-import-summary" id="bo-import-summary"></div>
+                            <button class="btn-primary" id="bo-import-run" onclick="runBoImport()" style="display: none;">Import</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="filtered-build-orders" class="filtered-build-orders">
+                    <!-- Filtered build orders will appear here -->
+                </div>
+            </section>
+
+            <!-- Civs Section -->
+            <section id="civs" class="section">
+                <h2>Civilizations</h2>
+
+                <div class="civs-header">
+                    <div class="civs-header-left">
+                        <img id="civs-header-flag" src="" alt="" class="civs-header-flag" style="display: none;">
+                        <h2 id="civs-header-name">Select a civilization</h2>
+                    </div>
+                    <div class="civs-header-right">
+                        <label for="civs-select">Civilization</label>
+                        <div class="custom-dropdown" id="civs-select-dropdown">
+                            <div class="dropdown-selected" onclick="toggleCustomDropdown('civs-select')">
+                                <span id="civs-select-text">Select civilization...</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+                            <div class="dropdown-options" id="civs-select-options">
+                                <!-- populated by civs.js -->
+                            </div>
+                        </div>
+                        <input type="hidden" id="civs-select" value="">
+                    </div>
+                </div>
+
+                <div class="civs-body" id="civs-body" style="display: none;">
+                    <div class="civs-section" data-section="generalApproach">
+                        <div class="civs-section-header">
+                            <h3 data-tooltip="Formatting: lines starting with '-' become bullet points · **text** becomes bold">General Approach</h3>
+                            <button type="button" class="civs-section-btn" data-action="edit">Edit</button>
+                            <button type="button" class="civs-section-btn civs-section-btn-save" data-action="save" style="display: none;">Save</button>
+                        </div>
+                        <div class="civs-view" data-role="view"></div>
+                        <textarea id="civs-general-approach-input" name="civs-general-approach" aria-label="General Approach notes" class="civs-textarea" data-role="edit" rows="6"
+                                  placeholder="Describe the general playstyle and main game plan."></textarea>
+                    </div>
+
+                    <div class="civs-section" data-section="alternativeApproaches">
+                        <div class="civs-section-header">
+                            <h3 data-tooltip="Formatting: lines starting with '-' become bullet points · **text** becomes bold">Alternative Approaches</h3>
+                            <button type="button" class="civs-section-btn" data-action="edit">Edit</button>
+                            <button type="button" class="civs-section-btn civs-section-btn-save" data-action="save" style="display: none;">Save</button>
+                        </div>
+                        <div class="civs-view" data-role="view"></div>
+                        <textarea id="civs-alternative-approaches-input" name="civs-alternative-approaches" aria-label="Alternative Approaches notes" class="civs-textarea" data-role="edit" rows="6"
+                                  placeholder="Describe alternative strategies and the situations in which they make sense..."></textarea>
+                    </div>
+
+                    <div class="civs-section" data-section="strengths">
+                        <div class="civs-section-header">
+                            <h3 data-tooltip="Formatting: lines starting with '-' become bullet points · **text** becomes bold">Strengths</h3>
+                            <button type="button" class="civs-section-btn" data-action="edit">Edit</button>
+                            <button type="button" class="civs-section-btn civs-section-btn-save" data-action="save" style="display: none;">Save</button>
+                        </div>
+                        <div class="civs-view" data-role="view"></div>
+                        <textarea id="civs-strengths-input" name="civs-strengths" aria-label="Strengths notes" class="civs-textarea" data-role="edit" rows="6"
+                                  placeholder="List the civilization's strengths..."></textarea>
+                    </div>
+
+                    <div class="civs-section" data-section="weaknesses">
+                        <div class="civs-section-header">
+                            <h3 data-tooltip="Formatting: lines starting with '-' become bullet points · **text** becomes bold">Weaknesses</h3>
+                            <button type="button" class="civs-section-btn" data-action="edit">Edit</button>
+                            <button type="button" class="civs-section-btn civs-section-btn-save" data-action="save" style="display: none;">Save</button>
+                        </div>
+                        <div class="civs-view" data-role="view"></div>
+                        <textarea id="civs-weaknesses-input" name="civs-weaknesses" aria-label="Weaknesses notes" class="civs-textarea" data-role="edit" rows="6"
+                                  placeholder="List the civilization's weaknesses..."></textarea>
+                    </div>
+
+                    <div class="civs-section">
+                        <h3>Strength Timeline</h3>
+                        <div class="civs-timeline-hint">
+                            Click empty cell: add point · Click point: remove · Drag: move point · Right-click: note · Hover: tooltip
+                        </div>
+
+                        <div class="civs-compare-controls">
+                            <div class="civs-compare-header">
+                                <button type="button" class="civs-section-btn" id="civs-compare-toggle">Compare with other civs</button>
+                                <button type="button" class="civs-section-btn" id="civs-compare-all" style="display: none;">Select all</button>
+                                <button type="button" class="civs-section-btn" id="civs-compare-clear" style="display: none;">Clear</button>
+                                <label class="civs-compare-points-toggle" style="display: none;">
+                                    <input type="checkbox" id="civs-compare-show-points">
+                                    <span>Show points</span>
+                                </label>
+                            </div>
+                            <div class="civs-compare-panel" id="civs-compare-panel" style="display: none;"></div>
+                            <div class="civs-compare-legend" id="civs-compare-legend"></div>
+                        </div>
+
+                        <div id="civs-timeline-wrapper" class="civs-timeline-wrapper">
+                            <svg id="civs-timeline-svg" class="civs-timeline-svg"></svg>
+                            <div id="civs-timeline-tooltip" class="civs-timeline-tooltip" style="display: none;"></div>
+                        </div>
+                        <div class="civs-notes-diagram">
+                            <h4>Notes</h4>
+                            <div id="civs-notes-list" class="civs-notes-list">
+                                <p class="civs-notes-empty">No notes yet. Right-click a cell to add one.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="civs-build-orders-slot" class="civs-build-orders-slot"></div>
+                <div id="civs-match-setup-slot" class="civs-match-setup-slot"></div>
+            </section>
+
+            <!-- Tierlist Section -->
+            <section id="tierlist" class="section">
+                <h2>Civilization Tierlist</h2>
+                
+                <!-- Tierlist Toggle Buttons -->
+                <div class="tierlist-toggle">
+                    <button class="toggle-btn active" data-view="general" onclick="showTierlist('general')">General Tierlist</button>
+                    <button class="toggle-btn" data-view="team-game" onclick="showTierlist('team-game')">Team Game Tierlist</button>
+                    <button class="toggle-btn" data-view="personal" onclick="showTierlist('personal')">My Civilization Tierlist</button>
+                </div>
+                
+                <!-- General Tierlist -->
+                <div id="general-tierlist" class="tierlist-view">
+                    <p class="tierlist-info">Drag flags to assign civilizations to tiers (S = Best, D = Worst)</p>
+                    <div id="tierlist-host-general"></div>
+                </div>
+
+                <!-- Personal Tierlist -->
+                <div id="personal-tierlist" class="tierlist-view" style="display: none;">
+                    <p class="tierlist-info">Rate civilizations based on your personal skill level (S = Master, D = Beginner)</p>
+                    <div id="tierlist-host-personal"></div>
+                </div>
+
+                <!-- Team Game Tierlist -->
+                <div id="team-game-tierlist" class="tierlist-view" style="display: none;">
+                    <p class="tierlist-info">Rate civilizations per game size and role</p>
+                    <div class="team-game-controls">
+                        <div class="team-control">
+                            <label for="team-game-size">Game Size</label>
+                            <select id="team-game-size" onchange="onTeamGameSettingChange()"></select>
+                        </div>
+                        <div class="team-control">
+                            <label for="team-game-role">Role</label>
+                            <select id="team-game-role" onchange="onTeamGameSettingChange()"></select>
+                        </div>
+                    </div>
+                    <div id="tierlist-host-team-game"></div>
+                </div>
+
+                <div class="tierlist-actions">
+                    <button class="btn-primary" onclick="saveTierlist()">Save Tierlist</button>
+                    <button class="btn-secondary" onclick="resetTierlist()">Reset</button>
+                    <button class="btn-secondary" onclick="exportTierlist()">Export</button>
+                    <button class="btn-secondary" onclick="importTierlist()">Import</button>
+                    <input type="file" id="tierlistFileInput" accept=".json" style="display: none;" onchange="handleTierlistFileSelect(event)">
+                </div>
+            </section>
+            
+            <!-- Maps Section -->
+            <section id="maps" class="section">
+                <h2>Maps</h2>
+                
+                <div class="maps-settings">
+                    <div class="settings-item">
+                        <button class="btn-secondary" onclick="refreshMaps()" style="margin-left: 1rem;">
+                            🔄 Refresh Maps
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Map Pools Display -->
+                <div class="map-pools">
+                    <div class="map-pool">
+                        <h3>Ranked Map Pool</h3>
+                        <div id="ranked-map-pool" class="map-pool-list">
+                            <!-- Ranked maps will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <div class="map-pool">
+                        <h3>Team Ranked Map Pool</h3>
+                        <div id="team-ranked-map-pool" class="map-pool-list">
+                            <!-- Team ranked maps will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add/Edit Map Form -->
+                <div class="map-manager">
+                    <h3>Add/Edit Map</h3>
+                    <div class="map-form">
+                        <div class="form-grid">
+                            <div class="form-item">
+                                <label for="map-name">Map Name</label>
+                                <input type="text" id="map-name" class="form-input" placeholder="Enter map name...">
+                            </div>
+                            
+                            <div class="form-item">
+                                <div class="group-label">Map Type</div>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="map-type-radio" value="land-open"> Land Open
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="map-type-radio" value="land-narrow"> Land Narrow
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="map-type-radio" value="hybrid"> Hybrid
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="map-type-radio" value="water"> Water
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-item">
+                                <div class="group-label">Map Pools</div>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="map-ranked-pool"> Ranked Map Pool
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="map-team-ranked-pool"> Team Ranked Map Pool
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-item full-width">
+                                <label for="map-user-notes">Map User Notes</label>
+                                <textarea id="map-user-notes" class="form-input" rows="3" placeholder="Add notes about this map..."></textarea>
+                            </div>
+                            
+                            <div class="form-item full-width">
+                                <label for="map-sheep-pattern">Sheep Pattern Notes</label>
+                                <textarea id="map-sheep-pattern" class="form-input" rows="3" placeholder="Describe sheep spawn patterns..."></textarea>
+                            </div>
+                            
+                            <div class="form-item full-width">
+                                <h4>Civilization Tier Lists</h4>
+                                <div class="civ-tierlists">
+                                    <div class="tierlist-section">
+                                        <div class="group-label">Ranked Civ Tierlist</div>
+                                        <div id="ranked-civ-tierlist" class="civ-tierlist-grid">
+                                            <!-- Civ tierlist dropdowns will be generated here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tierlist-section">
+                                        <div class="group-label">Team Ranked Civ Tierlist</div>
+                                        <div id="team-ranked-civ-tierlist" class="civ-tierlist-grid">
+                                            <!-- Civ tierlist dropdowns will be generated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="saveMap()">Save Map</button>
+                            <button class="btn-secondary" onclick="clearMapForm()">Clear Form</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Existing Maps List -->
+                <div class="existing-maps">
+                    <h3>All Maps</h3>
+                    <div id="maps-list" class="maps-list">
+                        <!-- Maps will be listed here -->
+                    </div>
+                </div>
+            </section>
+            
+            
+            
+            
+
+            <!-- Matchup Section -->
+            <section id="matchup" class="section">
+                <h2>Matchup Notes</h2>
+                <div class="matchup-setup">
+                    <h3>Select Civilizations</h3>
+                    <div class="setup-grid">
+                        <div class="setup-item">
+                            <label for="matchup-my-civ">My Civilization</label>
+                            <div class="custom-dropdown" id="matchup-my-civ-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('matchup-my-civ')">
+                                    <span id="matchup-my-civ-text">Select your civ...</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="matchup-my-civ-options">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="matchup-my-civ" value="">
+                        </div>
+                        <div class="setup-item">
+                            <label for="matchup-opponent-civ">Opponent Civilization</label>
+                            <div class="custom-dropdown" id="matchup-opponent-civ-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('matchup-opponent-civ')">
+                                    <span id="matchup-opponent-civ-text">Select opponent civ...</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="matchup-opponent-civ-options">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            <input type="hidden" id="matchup-opponent-civ" value="">
+                        </div>
+                    </div>
+                    
+                    <!-- Matchup Notes Container -->
+                    <div id="matchup-notes-container" class="hidden">
+                        <!-- Build Orders Section -->
+                        <div class="matchup-build-orders">
+                            <h4>Recommended Build Orders</h4>
+                            <div class="build-order-selector">
+                                <div class="group-label">Select Build Orders for this Matchup:</div>
+                                <div id="matchup-build-order-list" class="build-order-checklist">
+                                    <!-- Build orders will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="matchup-notes-grid">
+                            <!-- Strategies Section -->
+                            <div class="matchup-category">
+                                <h4>Strategies</h4>
+                                <div class="notes-group">
+                                    <div class="note-item">
+                                        <label for="strat1">Strategy 1</label>
+                                        <textarea id="strat1" class="matchup-note-textarea" rows="3" placeholder="Enter strategy 1..."></textarea>
+                                    </div>
+                                    <div class="note-item">
+                                        <label for="strat2">Strategy 2</label>
+                                        <textarea id="strat2" class="matchup-note-textarea" rows="3" placeholder="Enter strategy 2..."></textarea>
+                                    </div>
+                                    <div class="note-item">
+                                        <label for="strat3">Strategy 3</label>
+                                        <textarea id="strat3" class="matchup-note-textarea" rows="3" placeholder="Enter strategy 3..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Tactics Section -->
+                            <div class="matchup-category">
+                                <h4>Tactics</h4>
+                                <div class="notes-group">
+                                    <div class="note-item">
+                                        <label for="tak1">Tactic 1</label>
+                                        <textarea id="tak1" class="matchup-note-textarea" rows="3" placeholder="Enter tactic 1..."></textarea>
+                                    </div>
+                                    <div class="note-item">
+                                        <label for="tak2">Tactic 2</label>
+                                        <textarea id="tak2" class="matchup-note-textarea" rows="3" placeholder="Enter tactic 2..."></textarea>
+                                    </div>
+                                    <div class="note-item">
+                                        <label for="tak3">Tactic 3</label>
+                                        <textarea id="tak3" class="matchup-note-textarea" rows="3" placeholder="Enter tactic 3..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Attention Section -->
+                            <div class="matchup-category">
+                                <h4>Attention Points</h4>
+                                <div class="notes-group">
+                                    <div class="note-item">
+                                        <label for="att1">Attention 1</label>
+                                        <textarea id="att1" class="matchup-note-textarea" rows="3" placeholder="Enter attention point 1..."></textarea>
+                                    </div>
+                                    <div class="note-item">
+                                        <label for="att2">Attention 2</label>
+                                        <textarea id="att2" class="matchup-note-textarea" rows="3" placeholder="Enter attention point 2..."></textarea>
+                                    </div>
+                                    <div class="note-item">
+                                        <label for="att3">Attention 3</label>
+                                        <textarea id="att3" class="matchup-note-textarea" rows="3" placeholder="Enter attention point 3..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="saveMatchupData()">Save Matchup Notes</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Sync Section -->
+                    <div class="sync-section">
+                        <div class="matchup-action-buttons">
+                            <button id="sync-matchups-btn" class="matchup-action-btn" onclick="syncMatchupsFromBuildOrders()">
+                                <div class="matchup-action-icon">
+                                    <img src="Icons/Synchronization-Button-Icon_1_web.png" alt="Sync Icon">
+                                </div>
+                                <div class="matchup-action-title">Sync Matchups</div>
+                                <div class="matchup-action-subtitle">from Build Orders</div>
+                            </button>
+                        </div>
+                        <div id="sync-status" class="sync-status"></div>
+                        <small class="sync-help">
+                            <strong>Sync:</strong> Updates matchup data based on opponent civilizations in build orders.
+                        </small>
+                    </div>
+                </div>
+                
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer>
+            <div class="footer-container">
+                <div class="footer-left">
+                    <div class="footer-logo">
+                        <img src="Images/AoE-Strategos-Placeholder-Icon-Logo_Placeholder-500px.png" alt="AoE4 Strategyzer" class="footer-logo-img">
+                        <div class="footer-title">
+                            <h4>Age of Empires IV Strategyzer</h4>
+                            <p>Strategic Excellence Through Preparation</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-center">
+                    <div class="footer-section">
+                        <h5>Features</h5>
+                        <ul>
+                            <li>Build Order Management</li>
+                            <li>Matchup Strategies</li>
+                            <li>Civilization Tierlists</li>
+                            <li>Map Analysis</li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h5>Sources</h5>
+                        <ul>
+                            <li><a href="https://aoe4guides.com" target="_blank">AoE4 Guides</a></li>
+                            <li><a href="https://aoe4world.com" target="_blank">AoE4 World</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-stats" id="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-build-orders">0</span>
+                            <span class="stat-label">Build Orders</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-civilizations">18</span>
+                            <span class="stat-label">Civilizations</span>
+                        </div>
+                    </div>
+                    <div class="footer-version">
+                        <p>Version 0.1.1 | 2026</p>
+                        <p class="footer-quote">"Victory through Choice"</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 AoE4 Strategyzer | For Age of Empires IV Community | 
+                <span class="footer-disclaimer">Unofficial Fan Tool - Not affiliated with Microsoft or World's Edge</span></p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Load JavaScript modules in correct order -->
+    <!-- TAURI: tauri-adapter.js MUST be loaded FIRST to set flags before other scripts -->
+    <script src="js/theme.js"></script>
+    <script src="js/tauri-adapter.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/civilizations.js"></script>
+    <script src="js/build-orders.js"></script>
+    <script src="js/ui-helpers.js"></script>
+    <script src="js/dropdowns.js"></script>
+    <script src="js/tierlist.js"></script>
+    <script src="js/maps.js"></script>
+    <script src="js/matchup.js"></script>
+    <script src="js/strategy-unified.js"></script>
+    <script src="js/civs.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        // TAURI DIAGNOSTIC SCRIPT - Tests fetch and data loading
+        window.addEventListener('load', async function() {
+            console.log('=== TAURI DIAGNOSTICS ===');
+            console.log('Location:', window.location.href);
+            console.log('Protocol:', window.location.protocol);
+            console.log('Hostname:', window.location.hostname);
+            console.log('isTauri:', window.isTauri);
+            console.log('fileSystemReady:', window.fileSystemReady);
+
+            // Test 1: Can we fetch a known file?
+            console.log('--- TEST 1: Fetch maps-data.json ---');
+            try {
+                const mapsResponse = await fetch('maps/maps-data.json');
+                console.log('maps-data.json status:', mapsResponse.status);
+                if (mapsResponse.ok) {
+                    const mapsText = await mapsResponse.text();
+                    console.log('maps-data.json content length:', mapsText.length);
+                    console.log('maps-data.json first 200 chars:', mapsText.substring(0, 200));
+                }
+            } catch (e) {
+                console.error('Fetch maps-data.json FAILED:', e);
+            }
+
+            // Test 2: Can we fetch a flag image?
+            console.log('--- TEST 2: Fetch flag image ---');
+            try {
+                const flagResponse = await fetch('Flags/fr.png');
+                console.log('Flags/fr.png status:', flagResponse.status);
+                console.log('Flags/fr.png type:', flagResponse.headers.get('content-type'));
+            } catch (e) {
+                console.error('Fetch Flags/fr.png FAILED:', e);
+            }
+
+            // Test 3: Can we fetch a build order index?
+            console.log('--- TEST 3: Fetch build order index ---');
+            try {
+                const boResponse = await fetch('build-order-data/french/index.json');
+                console.log('french/index.json status:', boResponse.status);
+                if (boResponse.ok) {
+                    const boText = await boResponse.text();
+                    console.log('french/index.json content:', boText.substring(0, 300));
+                }
+            } catch (e) {
+                console.error('Fetch french/index.json FAILED:', e);
+            }
+
+            // Test 4: Check loaded data
+            console.log('--- TEST 4: Check loaded data ---');
+            console.log('window.mapsData:', window.mapsData);
+            console.log('window.quickMatchMaps:', window.quickMatchMaps);
+            console.log('window.buildOrderDatabase:', window.buildOrderDatabase);
+            console.log('window.civilizations count:', window.civilizations?.length);
+
+            // Test 5: Check buildOrderDatabase details
+            if (window.buildOrderDatabase) {
+                const keys = Object.keys(window.buildOrderDatabase);
+                console.log('buildOrderDatabase civs:', keys);
+                keys.forEach(k => {
+                    const data = window.buildOrderDatabase[k];
+                    console.log(`  ${k}: ${data?.buildOrders?.length || 0} build orders`);
+                });
+            }
+
+            console.log('=== END DIAGNOSTICS ===');
+        });
+    </script>
+    
+    <!-- Row Type Selection Modal -->
+    <div id="local-row-type-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="local-row-type-modal-title">Insert New Row</h3>
+                <button class="modal-close" onclick="closeLocalRowTypeModal()" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p class="row-type-hint" id="local-row-type-modal-hint">Choose the type of row to insert:</p>
+                <div class="row-type-options">
+                    <button class="row-type-btn" onclick="insertLocalRowType('standard')">
+                        <div class="row-type-icon"><span class="resource-icon-stack">
+                                <img src="Icons/foodicon.png" alt="Food">
+                                <img src="Icons/woodicon.png" alt="Wood">
+                                <img src="Icons/goldicon.png" alt="Gold">
+                                <img src="Icons/stoneicon.png" alt="Stone">
+                            </span></div>
+                        <div class="row-type-label">Standard Row</div>
+                        <div class="row-type-desc">Resource allocation step</div>
+                    </button>
+                    <button class="row-type-btn" onclick="insertLocalRowType('custom')">
+                        <div class="row-type-icon"><svg class="row-type-svg" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                                <path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                            </svg></div>
+                        <div class="row-type-label">Custom Row</div>
+                        <div class="row-type-desc">Custom instruction or note</div>
+                    </button>
+                    <button class="row-type-btn" onclick="insertLocalRowType('ageup')">
+                        <div class="row-type-icon"><img src="Images/age/age_2.webp" class="row-type-img" alt="Age Up"></div>
+                        <div class="row-type-label">Age Up</div>
+                        <div class="row-type-desc">Age progression step</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Build Order Preview Modal -->
+    <div id="build-order-preview-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modal-build-title">Build Order Preview</h2>
+                <button class="modal-close-btn" onclick="closeBuildOrderPreview()">×</button>
+            </div>
+            <div class="modal-content">
+                <div id="modal-viewer-description" class="viewer-description" style="display: none;">
+                    <h4>Description</h4>
+                    <p id="modal-viewer-description-text"></p>
+                </div>
+                
+                <div class="build-order-table-container">
+                    <table class="build-order-table" id="modal-build-order-table">
+                        <thead>
+                            <tr>
+                                <th width="60">#</th>
+                                <th width="80">Time</th>
+                                <th width="100">
+                                    <img src="Icons/foodicon.png" alt="Food" class="resource-icon" onerror="this.style.display='none'">
+                                </th>
+                                <th width="100">
+                                    <img src="Icons/woodicon.png" alt="Wood" class="resource-icon" onerror="this.style.display='none'">
+                                </th>
+                                <th width="100">
+                                    <img src="Icons/goldicon.png" alt="Gold" class="resource-icon" onerror="this.style.display='none'">
+                                </th>
+                                <th width="100">
+                                    <img src="Icons/stoneicon.png" alt="Stone" class="resource-icon" onerror="this.style.display='none'">
+                                </th>
+                                <th>User Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-viewer-tbody">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

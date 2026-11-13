@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=AoE4 Strategyzer
+GenericName=Strategy Helper
+Comment=Strategy helper for Age of Empires IV: build orders, tierlists, matchups
+Exec=aoe4-strategyzer
+Icon=aoe4-strategyzer
+Categories=Game;StrategyGame;
+Terminal=false
+StartupWMClass=aoe4-strategyzer
+Keywords=aoe4;age-of-empires;strategy;build-order;tierlist;
