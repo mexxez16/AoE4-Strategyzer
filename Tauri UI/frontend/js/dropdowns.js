@@ -54,7 +54,7 @@ function populateCustomDropdownOptions(dropdownId) {
     optionsContainer.innerHTML = '';
     
     // Maps list filter dropdowns keep their static options from index.html
-    if (dropdownId === 'maps-type-dropdown' || dropdownId === 'maps-pool-dropdown') {
+    if (dropdownId === 'maps-type' || dropdownId === 'maps-pool') {
         return;
     }
 

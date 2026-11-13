@@ -522,7 +522,7 @@ function selectMapsListType(value, label) {
     if (textEl) textEl.textContent = label;
     const hidden = document.getElementById('maps-type');
     if (hidden) hidden.value = value;
-    const options = document.getElementById('maps-type-dropdown-options');
+    const options = document.getElementById('maps-type-options');
     if (options) options.classList.remove('active');
     const selected = document.querySelector('#maps-type-dropdown .dropdown-selected');
     if (selected) selected.classList.remove('active');
@@ -534,7 +534,7 @@ function selectMapsListPool(value, label) {
     if (textEl) textEl.textContent = label;
     const hidden = document.getElementById('maps-pool');
     if (hidden) hidden.value = value;
-    const options = document.getElementById('maps-pool-dropdown-options');
+    const options = document.getElementById('maps-pool-options');
     if (options) options.classList.remove('active');
     const selected = document.querySelector('#maps-pool-dropdown .dropdown-selected');
     if (selected) selected.classList.remove('active');
