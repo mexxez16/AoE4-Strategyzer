@@ -53,6 +53,11 @@ function populateCustomDropdownOptions(dropdownId) {
     // Clear existing options
     optionsContainer.innerHTML = '';
     
+    // Maps list filter dropdowns keep their static options from index.html
+    if (dropdownId === 'maps-type-dropdown' || dropdownId === 'maps-pool-dropdown') {
+        return;
+    }
+
     // Handle map-select specifically - it has its own population logic
     if (dropdownId === 'map-select') {
         if (typeof populateMapDropdown === 'function') {

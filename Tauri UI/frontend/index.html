@@ -56,7 +56,7 @@
                     <h3>Match Setup</h3>
                     <div class="setup-grid">
                         <div class="setup-item">
-                            <label for="my-civ">My Civilization</label>
+                            <label>My Civilization</label>
                             <div class="custom-dropdown" id="my-civ-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('my-civ')">
                                     <span id="my-civ-text">Select your civ...</span>
@@ -69,7 +69,7 @@
                             <input type="hidden" id="my-civ" value="">
                         </div>
                         <div class="setup-item">
-                            <label for="opponent-civ">Opponent Civilization</label>
+                            <label>Opponent Civilization</label>
                             <div class="custom-dropdown" id="opponent-civ-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('opponent-civ')">
                                     <span id="opponent-civ-text">Select opponent civ...</span>
@@ -82,7 +82,7 @@
                             <input type="hidden" id="opponent-civ" value="">
                         </div>
                         <div class="setup-item">
-                            <label for="map-select">Map</label>
+                            <label>Map</label>
                             <div class="custom-dropdown" id="map-select-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('map-select')">
                                     <span id="map-select-text">Select map...</span>
@@ -95,7 +95,7 @@
                             <input type="hidden" id="map-select" value="">
                         </div>
                         <div class="setup-item">
-                            <label for="map-type">Map Type</label>
+                            <label>Map Type</label>
                             <div class="custom-dropdown" id="map-type-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('map-type')">
                                     <span id="map-type-text">Select map type...</span>
@@ -350,7 +350,7 @@
                     <div class="build-order-form">
                         <div class="form-grid">
                             <div class="form-item">
-                                <label for="local-civ-select">Civilization</label>
+                                <label>Civilization</label>
                                 <div class="custom-dropdown" id="local-civ-select-dropdown">
                                     <div class="dropdown-selected" onclick="toggleCustomDropdown('local-civ-select')">
                                         <span id="local-civ-select-text">Select civilization...</span>
@@ -399,6 +399,7 @@
                                     <label class="checkbox-label">
                                         <input type="checkbox" name="local-map-type" value="water"> Water
                                     </label>
+                                </div>
                             </div>
                             <div class="form-item full-width">
                                 <div class="group-label">Choose Against (Opponent Civilization)</div>
@@ -407,7 +408,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Build Order Steps Table -->
                         <div class="build-order-creator">
                             <h4>Build Order Steps</h4>
@@ -459,7 +460,7 @@
                     <div class="build-order-form">
                         <div class="form-grid">
                             <div class="form-item">
-                                <label for="external-civ-select">Your Civilization</label>
+                                <label>Your Civilization</label>
                                 <div class="custom-dropdown" id="external-civ-select-dropdown">
                                     <div class="dropdown-selected" onclick="toggleCustomDropdown('external-civ-select')">
                                         <span id="external-civ-select-text">Select civilization...</span>
@@ -520,8 +521,16 @@
                                 <label for="external-build-notes">User Notes (optional)</label>
                                 <textarea id="external-build-notes" class="form-input" rows="3" placeholder="Add any notes about this build order..."></textarea>
                             </div>
+                            <div class="form-item full-width">
+                                <label for="external-build-status">Build Order Status</label>
+                                <select id="external-build-status" class="form-input" name="external-active-status">
+                                    <option value="active" selected>Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                                <small class="form-help">Active build orders appear in strategy recommendations and are highlighted in the library.</small>
+                            </div>
                         </div>
-                        
+
                         <div class="form-actions">
                             <button class="btn-primary" onclick="addExternalBuildOrder()">Add Build Order</button>
                         </div>
@@ -538,7 +547,7 @@
                 <div class="build-orders-filter">
                     <div class="filter-controls">
                         <div class="filter-field">
-                            <label class="filter-label" for="filter-civ-select">Filter by Civilization</label>
+                            <label class="filter-label">Filter by Civilization</label>
                             <div class="custom-dropdown" id="filter-civ-select-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('filter-civ-select')">
                                     <span id="filter-civ-select-text">All Civilizations</span>
@@ -551,7 +560,7 @@
                             <input type="hidden" id="filter-civ-select" value="">
                         </div>
                         <div class="filter-field">
-                            <label class="filter-label" for="filter-active-select">Filter by Status</label>
+                            <label class="filter-label">Filter by Status</label>
                             <div class="custom-dropdown" id="filter-active-select-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('filter-active-select')">
                                     <span id="filter-active-select-text">All Build Orders</span>
@@ -645,7 +654,7 @@
                         <h2 id="civs-header-name">Select a civilization</h2>
                     </div>
                     <div class="civs-header-right">
-                        <label for="civs-select">Civilization</label>
+                        <label>Civilization</label>
                         <div class="custom-dropdown" id="civs-select-dropdown">
                             <div class="dropdown-selected" onclick="toggleCustomDropdown('civs-select')">
                                 <span id="civs-select-text">Select civilization...</span>
@@ -898,6 +907,52 @@
                 <!-- Existing Maps List -->
                 <div class="existing-maps">
                     <h3>All Maps</h3>
+                    <div class="maps-filter">
+                        <div class="filter-field maps-filter-search">
+                            <label class="group-label" for="maps-filter-text">Search</label>
+                            <input type="text" id="maps-filter-text" class="form-input" placeholder="Map name..." oninput="applyMapsListFilter()">
+                        </div>
+                        <div class="filter-field">
+                            <label class="group-label">Type</label>
+                            <div class="custom-dropdown" id="maps-type-dropdown">
+                                <input type="hidden" id="maps-type" value="">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('maps-type-dropdown')">
+                                    <span id="maps-type-text">All Types</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="maps-type-dropdown-options">
+                                    <div class="dropdown-option" data-value="" onclick="selectMapsListType('', 'All Types')">All Types</div>
+                                    <div class="dropdown-option" data-value="land-open" onclick="selectMapsListType('land-open', 'Land Open')">Land Open</div>
+                                    <div class="dropdown-option" data-value="land-narrow" onclick="selectMapsListType('land-narrow', 'Land Narrow')">Land Narrow</div>
+                                    <div class="dropdown-option" data-value="hybrid" onclick="selectMapsListType('hybrid', 'Hybrid')">Hybrid</div>
+                                    <div class="dropdown-option" data-value="water" onclick="selectMapsListType('water', 'Water')">Water</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-field">
+                            <label class="group-label">Pool</label>
+                            <div class="custom-dropdown" id="maps-pool-dropdown">
+                                <input type="hidden" id="maps-pool" value="">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('maps-pool-dropdown')">
+                                    <span id="maps-pool-text">All Pools</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="maps-pool-dropdown-options">
+                                    <div class="dropdown-option" data-value="" onclick="selectMapsListPool('', 'All Pools')">All Pools</div>
+                                    <div class="dropdown-option" data-value="ranked" onclick="selectMapsListPool('ranked', 'Ranked')">Ranked</div>
+                                    <div class="dropdown-option" data-value="team-ranked" onclick="selectMapsListPool('team-ranked', 'Team Ranked')">Team Ranked</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-field sort-field">
+                            <label class="group-label" for="maps-sort-select">Sort by</label>
+                            <select id="maps-sort-select" class="sort-select" onchange="applyMapsListFilter()">
+                                <option value="name-asc">Name A–Z</option>
+                                <option value="name-desc">Name Z–A</option>
+                                <option value="type">Type</option>
+                            </select>
+                        </div>
+                    </div>
                     <div id="maps-list" class="maps-list">
                         <!-- Maps will be listed here -->
                     </div>
@@ -915,7 +970,7 @@
                     <h3>Select Civilizations</h3>
                     <div class="setup-grid">
                         <div class="setup-item">
-                            <label for="matchup-my-civ">My Civilization</label>
+                            <label>My Civilization</label>
                             <div class="custom-dropdown" id="matchup-my-civ-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('matchup-my-civ')">
                                     <span id="matchup-my-civ-text">Select your civ...</span>
@@ -928,7 +983,7 @@
                             <input type="hidden" id="matchup-my-civ" value="">
                         </div>
                         <div class="setup-item">
-                            <label for="matchup-opponent-civ">Opponent Civilization</label>
+                            <label>Opponent Civilization</label>
                             <div class="custom-dropdown" id="matchup-opponent-civ-dropdown">
                                 <div class="dropdown-selected" onclick="toggleCustomDropdown('matchup-opponent-civ')">
                                     <span id="matchup-opponent-civ-text">Select opponent civ...</span>
@@ -957,7 +1012,7 @@
                         
                         <div class="matchup-notes-grid">
                             <!-- Strategies Section -->
-                            <div class="matchup-category">
+                            <div class="matchup-category" data-category="strategies">
                                 <h4>Strategies</h4>
                                 <div class="notes-group">
                                     <div class="note-item">
@@ -973,10 +1028,9 @@
                                         <textarea id="strat3" class="matchup-note-textarea" rows="3" placeholder="Enter strategy 3..."></textarea>
                                     </div>
                                 </div>
+                                <button class="btn btn-secondary btn-small add-note-btn" onclick="addMatchupNoteItem('strategies')">+ Add Strategy</button>
                             </div>
-                            
-                            <!-- Tactics Section -->
-                            <div class="matchup-category">
+                            <div class="matchup-category" data-category="tactics">
                                 <h4>Tactics</h4>
                                 <div class="notes-group">
                                     <div class="note-item">
@@ -992,10 +1046,11 @@
                                         <textarea id="tak3" class="matchup-note-textarea" rows="3" placeholder="Enter tactic 3..."></textarea>
                                     </div>
                                 </div>
+                                <button class="btn btn-secondary btn-small add-note-btn" onclick="addMatchupNoteItem('tactics')">+ Add Tactic</button>
                             </div>
                             
                             <!-- Attention Section -->
-                            <div class="matchup-category">
+                            <div class="matchup-category" data-category="attention">
                                 <h4>Attention Points</h4>
                                 <div class="notes-group">
                                     <div class="note-item">
@@ -1011,6 +1066,7 @@
                                         <textarea id="att3" class="matchup-note-textarea" rows="3" placeholder="Enter attention point 3..."></textarea>
                                     </div>
                                 </div>
+                                <button class="btn btn-secondary btn-small add-note-btn" onclick="addMatchupNoteItem('attention')">+ Add Attention Point</button>
                             </div>
                         </div>
                         

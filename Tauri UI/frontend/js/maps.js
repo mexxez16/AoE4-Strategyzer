@@ -1,6 +1,80 @@
 // Maps functionality module
 let mapsData = [];
 let currentEditingMap = null;
+let defaultMapsCache = null;
+
+// Normalize a map name for merge conflict detection
+function normalizeMapName(name) {
+    return (name || '').trim().toLowerCase();
+}
+
+// Load the shipped default maps (maps-data-default.json).
+// These are read-only base data: they appear in All Maps but are never
+// overwritten by installs, because user edits live in APPDATA maps-data.json.
+async function fetchDefaultMaps() {
+    if (defaultMapsCache) return defaultMapsCache;
+    try {
+        const response = await fetch('maps/maps-data-default.json');
+        if (response.ok) {
+            defaultMapsCache = JSON.parse(await response.text());
+            if (!Array.isArray(defaultMapsCache)) defaultMapsCache = [];
+            console.log('Loaded default maps:', defaultMapsCache.length);
+        }
+    } catch (error) {
+        console.log('No default maps data found');
+        defaultMapsCache = [];
+    }
+    return defaultMapsCache;
+}
+
+// Merge default maps with user maps.
+// User maps win over defaults (matched by normalized name or default id).
+// Entries with hidden=true are tombstones for deleted defaults: they are
+// excluded from the result but suppress re-adding the default map.
+function mergeMapData(defaults, userMaps) {
+    const users = Array.isArray(userMaps) ? userMaps : [];
+    const defs = Array.isArray(defaults) ? defaults : [];
+
+    const visibleNames = new Set();
+    const hiddenNames = new Set();
+    const userIds = new Set();
+
+    users.forEach(m => {
+        if (!m || !m.name) return;
+        if (m.id) userIds.add(m.id);
+        if (m.hidden) {
+            hiddenNames.add(normalizeMapName(m.name));
+        } else {
+            visibleNames.add(normalizeMapName(m.name));
+        }
+    });
+
+    // Visible user maps come first, then missing defaults
+    const merged = users.filter(m => m && m.name && !m.hidden);
+    defs.forEach(d => {
+        const n = normalizeMapName(d.name);
+        if (visibleNames.has(n) || hiddenNames.has(n) || (d.id && userIds.has(d.id))) return;
+        merged.push(d);
+    });
+    return merged;
+}
+
+// True if a map is identical to its shipped default (no user edit yet).
+// Pristine defaults are excluded from APPDATA saves so they stay in
+// maps-data-default.json and future updates to defaults still propagate.
+function isPristineDefault(map) {
+    if (!map || map.hidden) return false;
+    if (!defaultMapsCache) return false;
+    const def = defaultMapsCache.find(d => d.id === map.id);
+    if (!def) return false;
+    const fields = ['name', 'type', 'isRanked', 'isTeamRanked', 'userNotes', 'sheepPattern', 'rankedTierlist', 'teamRankedTierlist'];
+    return fields.every(f => JSON.stringify(map[f] ?? null) === JSON.stringify(def[f] ?? null));
+}
+
+// All maps without hidden tombstone entries (for display/data use)
+function getVisibleMaps() {
+    return mapsData.filter(m => !m.hidden);
+}
 
 // Initialize maps
 async function initializeMaps() {
@@ -32,20 +106,22 @@ async function initializeMaps() {
     }
 }
 
-// Load maps data from JSON file
-// TAURI: First checks APPDATA (user-saved data), then falls back to embedded assets
+// Load maps data from JSON files
+// TAURI: Defaults (maps-data-default.json) merged with user data from APPDATA
 async function loadMapsData() {
     console.log('loadMapsData called');
 
     try {
-        let embeddedMaps = [];
-        let appdataMaps = null;
+        const defaults = await fetchDefaultMaps();
 
-        // First load embedded assets (base data)
+        let userMaps = [];
+
+        // Load embedded legacy user data (bundled maps-data.json)
         try {
             const response = await fetch('maps/maps-data.json');
             if (response.ok) {
-                embeddedMaps = JSON.parse(await response.text());
+                const embeddedMaps = JSON.parse(await response.text());
+                if (Array.isArray(embeddedMaps)) userMaps = userMaps.concat(embeddedMaps);
                 console.log('Loaded maps from embedded assets:', embeddedMaps.length);
             }
         } catch (fetchError) {
@@ -57,30 +133,22 @@ async function loadMapsData() {
             const content = await window.readFileSystemFile('maps', 'maps-data.json');
             if (content) {
                 try {
-                    appdataMaps = JSON.parse(content);
-                    console.log('Loaded maps from APPDATA:', appdataMaps.length);
+                    const appdataMaps = JSON.parse(content);
+                    if (Array.isArray(appdataMaps)) {
+                        userMaps = appdataMaps;
+                        console.log('Loaded maps from APPDATA:', appdataMaps.length);
+                    }
                 } catch (parseError) {
                     console.warn('Could not parse maps file from APPDATA:', parseError);
                 }
             }
         }
 
-        // Merge data: APPDATA overrides embedded, but embedded serves as fallback
-        if (appdataMaps && appdataMaps.length > 0) {
-            // APPDATA has maps - use those (they include user modifications)
-            mapsData = appdataMaps;
-            console.log('Using maps from APPDATA');
-        } else if (embeddedMaps.length > 0) {
-            // Use embedded maps as fallback
-            mapsData = embeddedMaps;
-            console.log('Using maps from embedded assets');
-        } else {
-            mapsData = [];
-            console.log('No maps data found, using empty array');
-        }
+        // Merge: user maps override defaults, missing defaults are added
+        mapsData = mergeMapData(defaults, userMaps);
 
         // Update Quick Match maps data to stay in sync
-        window.quickMatchMaps = [...mapsData];
+        window.quickMatchMaps = getVisibleMaps();
 
     } catch (error) {
         console.error('Error loading maps data:', error);
@@ -97,10 +165,15 @@ async function saveMapsData() {
         const directory = 'maps';
         const fileName = 'maps-data.json';
 
+        // Only save user data: user-created maps, edited defaults and hidden
+        // tombstones. Pristine defaults stay in maps-data-default.json.
+        const dataToSave = getVisibleMaps().filter(m => !isPristineDefault(m))
+            .concat(mapsData.filter(m => m.hidden));
+
         // Use Tauri FS API via tauri-adapter.js
         if (window.writeFileSystemFile) {
             console.log('Saving maps data via Tauri FS API...');
-            const success = await window.writeFileSystemFile(directory, fileName, JSON.stringify(mapsData, null, 2));
+            const success = await window.writeFileSystemFile(directory, fileName, JSON.stringify(dataToSave, null, 2));
             if (success) {
                 console.log('Data written successfully');
                 showNotification('Maps data saved successfully!', 'success');
@@ -115,8 +188,8 @@ async function saveMapsData() {
             const fileHandle = await mapsHandle.getFileHandle('maps-data.json', { create: true });
             console.log('Creating writable stream...');
             const writable = await fileHandle.createWritable();
-            console.log('Writing data...', mapsData);
-            await writable.write(JSON.stringify(mapsData, null, 2));
+            console.log('Writing data...', dataToSave);
+            await writable.write(JSON.stringify(dataToSave, null, 2));
             await writable.close();
             console.log('Data written successfully');
             showNotification('Maps data saved successfully!', 'success');
@@ -248,7 +321,7 @@ async function saveMap() {
     displayAllMaps();
 
     // Update Quick Match maps data to stay in sync
-    window.quickMatchMaps = [...mapsData];
+    window.quickMatchMaps = getVisibleMaps();
 
     // Refresh Quick Match dropdown if it exists
     if (typeof populateMapDropdown === 'function') {
@@ -280,8 +353,8 @@ function displayMapPools() {
         return;
     }
     
-    const rankedMaps = mapsData.filter(m => m.isRanked).sort((a, b) => a.name.localeCompare(b.name));
-    const teamRankedMaps = mapsData.filter(m => m.isTeamRanked).sort((a, b) => a.name.localeCompare(b.name));
+    const rankedMaps = getVisibleMaps().filter(m => m.isRanked).sort((a, b) => a.name.localeCompare(b.name));
+    const teamRankedMaps = getVisibleMaps().filter(m => m.isTeamRanked).sort((a, b) => a.name.localeCompare(b.name));
     
     console.log('Ranked maps:', rankedMaps);
     console.log('Team ranked maps:', teamRankedMaps);
@@ -414,22 +487,89 @@ function createMapPoolItem(map, sectionPrefix = 'pool') {
     `;
 }
 
-// Display all maps
+// Filter/sort state for the All Maps list (search text, map type, pool, sort mode)
+let mapsListFilter = { search: '', type: '', pool: '', sort: 'name-asc' };
+
+// Pure filter+sort over a map array, shared by displayAllMaps and tests
+function filterMapsForDisplay(maps, f) {
+    let list = maps.filter(m => m && m.name && !m.hidden);
+    if (f.search) {
+        const q = f.search.toLowerCase();
+        list = list.filter(m => m.name.toLowerCase().includes(q));
+    }
+    if (f.type) {
+        list = list.filter(m => m.type === f.type);
+    }
+    if (f.pool === 'ranked') {
+        list = list.filter(m => m.isRanked);
+    } else if (f.pool === 'team-ranked') {
+        list = list.filter(m => m.isTeamRanked);
+    }
+    if (f.sort === 'name-desc') {
+        list = [...list].sort((a, b) => b.name.localeCompare(a.name));
+    } else if (f.sort === 'type') {
+        list = [...list].sort((a, b) =>
+            (a.type || '').localeCompare(b.type || '') || a.name.localeCompare(b.name));
+    } else {
+        list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+}
+
+function selectMapsListType(value, label) {
+    mapsListFilter.type = value;
+    const textEl = document.getElementById('maps-type-text');
+    if (textEl) textEl.textContent = label;
+    const hidden = document.getElementById('maps-type');
+    if (hidden) hidden.value = value;
+    const options = document.getElementById('maps-type-dropdown-options');
+    if (options) options.classList.remove('active');
+    const selected = document.querySelector('#maps-type-dropdown .dropdown-selected');
+    if (selected) selected.classList.remove('active');
+    applyMapsListFilter();
+}
+function selectMapsListPool(value, label) {
+    mapsListFilter.pool = value;
+    const textEl = document.getElementById('maps-pool-text');
+    if (textEl) textEl.textContent = label;
+    const hidden = document.getElementById('maps-pool');
+    if (hidden) hidden.value = value;
+    const options = document.getElementById('maps-pool-dropdown-options');
+    if (options) options.classList.remove('active');
+    const selected = document.querySelector('#maps-pool-dropdown .dropdown-selected');
+    if (selected) selected.classList.remove('active');
+    applyMapsListFilter();
+}
+
+function applyMapsListFilter() {
+    const textEl = document.getElementById('maps-filter-text');
+    if (textEl) mapsListFilter.search = textEl.value.trim();
+    const typeVal = document.getElementById('maps-type');
+    if (typeVal) mapsListFilter.type = typeVal.value || '';
+    const poolVal = document.getElementById('maps-pool');
+    if (poolVal) mapsListFilter.pool = poolVal.value || '';
+    const sortEl = document.getElementById('maps-sort-select');
+    if (sortEl) mapsListFilter.sort = sortEl.value || 'name-asc';
+    displayAllMaps();
+}
+
 function displayAllMaps() {
     console.log('displayAllMaps called with mapsData:', mapsData);
     console.log('Number of maps:', mapsData.length);
     console.log('Map names:', mapsData.map(m => m.name));
-    
+
     const mapsList = document.getElementById('maps-list');
     if (!mapsList) {
         console.error('Maps list element not found');
         return;
     }
-    
-    const sortedMaps = [...mapsData].sort((a, b) => a.name.localeCompare(b.name));
-    
+
+    const sortedMaps = filterMapsForDisplay(mapsData, mapsListFilter);
+
     if (sortedMaps.length === 0) {
-        mapsList.innerHTML = '<p class="no-maps">No maps added yet</p>';
+        mapsList.innerHTML = mapsData.length > 0
+            ? '<p class="no-maps">No maps match the current filter</p>'
+            : '<p class="no-maps">No maps added yet</p>';
         return;
     }
     
@@ -706,7 +846,7 @@ async function saveInlineMapEdit(mapId, sectionPrefix = 'edit') {
     displayAllMaps();
 
     // Update Quick Match maps data to stay in sync
-    window.quickMatchMaps = [...mapsData];
+    window.quickMatchMaps = getVisibleMaps();
 
     // Refresh Quick Match dropdown if it exists
     if (typeof populateMapDropdown === 'function') {
@@ -768,7 +908,16 @@ async function deleteMap(mapId) {
 
     if (!confirm('Are you sure you want to delete this map?')) return;
 
+    const removedMap = mapsData.find(m => m.id === mapId);
+    const removedIsDefault = removedMap && defaultMapsCache && defaultMapsCache.some(d => d.id === mapId);
+
     mapsData = mapsData.filter(m => m.id !== mapId);
+
+    // Deleted default maps get a hidden tombstone so they are not
+    // re-added from maps-data-default.json on the next load.
+    if (removedIsDefault) {
+        mapsData.push({ ...removedMap, hidden: true });
+    }
 
     // Save and refresh (using await for consistency with async function)
     await saveMapsData();
@@ -776,7 +925,7 @@ async function deleteMap(mapId) {
     displayAllMaps();
 
     // Update Quick Match maps data to stay in sync
-    window.quickMatchMaps = [...mapsData];
+    window.quickMatchMaps = getVisibleMaps();
 
     // Refresh Quick Match dropdown if it exists
     if (typeof populateMapDropdown === 'function') {
@@ -878,6 +1027,7 @@ async function refreshMaps() {
 
 // Export maps functions to global scope
 window.initializeMaps = initializeMaps;
+window.mergeMapData = mergeMapData;
 window.saveMap = saveMap;
 window.clearMapForm = clearMapForm;
 window.editMap = editMap;
@@ -886,6 +1036,16 @@ window.refreshMaps = refreshMaps;
 window.loadMapsData = loadMapsData;
 window.displayMapPools = displayMapPools;
 window.displayAllMaps = displayAllMaps;
+// Test hook: replace the in-memory maps data (jsdom test harness sets data
+// here because top-level `let` bindings are script-scoped in the harness)
+window.__setMapsData = function (arr) {
+    mapsData = Array.isArray(arr) ? arr : [];
+    return mapsData.length;
+};
+window.filterMapsForDisplay = filterMapsForDisplay;
+window.selectMapsListType = selectMapsListType;
+window.selectMapsListPool = selectMapsListPool;
+window.applyMapsListFilter = applyMapsListFilter;
 window.toggleMapDropdown = toggleMapDropdown;
 // Make functions available immediately
 window.toggleInlineEditMap = toggleInlineEditMap;

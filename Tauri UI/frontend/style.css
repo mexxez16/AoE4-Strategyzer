@@ -2176,6 +2176,30 @@ body.theme-bayeux-blue tr.age-up-row td { color: #3a2d12; }
     font-weight: 500;
 }
 
+/* Filter bar for the All Maps list (mirrors build-orders-filter row) */
+.maps-filter {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+}
+
+.maps-filter .filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 150px;
+}
+
+.maps-filter .maps-filter-search { flex: 1 1 200px; min-width: 180px; }
+
+.maps-filter .filter-field .group-label { margin-bottom: 0; }
+
+.maps-filter .form-input { min-height: 50px; }
+
+.maps-filter .sort-field { min-width: 170px; }
+
 .map-type-land-open { background: #e8f5e9; color: #2e7d32; }
 .map-type-land-narrow { background: #fff3e0; color: #ef6c00; }
 .map-type-hybrid { background: #e3f2fd; color: #1565c0; }
@@ -4546,6 +4570,176 @@ body.theme-bayeux-blue .dropdown-options {
 
 body.theme-bayeux-blue .dropdown-option { color: #f0ece4; }
 body.theme-bayeux-blue .dropdown-option:hover { background: rgba(243, 190, 110, 0.12); color: #f3be6e; }
+
+/* Expanded map dropdown + Home Map Info: readable labels and tier rows on navy.
+   Base rules use light-theme colors (#2c3e50 / #666 on white pills). */
+body.theme-bayeux-blue :is(.map-dropdown-content, .map-info-content) .map-detail-label {
+    color: #f0d9a8;
+}
+
+body.theme-bayeux-blue :is(.map-dropdown-content, .map-info-content) .map-detail-value {
+    color: #e8e3d6;
+}
+
+body.theme-bayeux-blue :is(.map-dropdown-content, .map-info-content) .map-tierlist-summary {
+    border-top: 1px solid rgba(243, 190, 110, 0.25);
+}
+
+body.theme-bayeux-blue :is(.map-dropdown-content, .map-info-content) .tier-row-compact {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(243, 190, 110, 0.25);
+    color: #e8e3d6;
+}
+
+body.theme-bayeux-blue :is(.map-dropdown-content, .map-info-content) .tier-row-compact strong {
+    color: #f6d080;
+}
+
+/* Home: Map Info + Matchup Information panels on navy.
+   Base rules keep light backgrounds while the theme turns headings gold
+   and body text light - both unreadable without these overrides. */
+body.theme-bayeux-blue .map-info-content,
+body.theme-bayeux-blue .matchup-info-content,
+body.theme-bayeux-blue .matchup-info-grid,
+body.theme-bayeux-blue .map-info-grid {
+    background-color: #0a2038;
+    background-image:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 3px),
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.024) 0px, rgba(255, 255, 255, 0.024) 1px, transparent 1px, transparent 3px);
+    border-color: rgba(243, 190, 110, 0.3);
+}
+
+body.theme-bayeux-blue .map-info-grid h4,
+body.theme-bayeux-blue .matchup-info-grid h4 {
+    color: #f6d080;
+}
+
+body.theme-bayeux-blue .matchup-section-label {
+    color: #f0d9a8;
+}
+
+body.theme-bayeux-blue .matchup-list li {
+    background: rgba(0, 0, 0, 0.35);
+    color: #e8e3d6;
+    border-color: rgba(243, 190, 110, 0.35);
+}
+
+body.theme-bayeux-blue .matchup-list li:before {
+    color: #f3be6e;
+}
+
+body.theme-bayeux-blue .build-order-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(243, 190, 110, 0.25);
+}
+
+body.theme-bayeux-blue .build-order-item:hover {
+    background: rgba(19, 53, 87, 0.8);
+}
+
+body.theme-bayeux-blue .build-order-item h5 {
+    color: #f6d080;
+}
+
+body.theme-bayeux-blue .build-order-notes {
+    color: #e8e3d6;
+}
+
+body.theme-bayeux-blue .build-order-notes strong {
+    color: #f6d080;
+}
+
+body.theme-bayeux-blue .build-order-link-text.external {
+    color: #ffa458;
+    background: rgba(230, 126, 34, 0.18);
+    border: 1px solid rgba(230, 126, 34, 0.45);
+}
+
+body.theme-bayeux-blue .build-order-item:hover .build-order-link-text.external {
+    color: #ffb97a;
+    background: rgba(230, 126, 34, 0.28);
+}
+
+body.theme-bayeux-blue .build-order-link-text.local {
+    color: #58d68d;
+    background: rgba(39, 174, 96, 0.18);
+    border: 1px solid rgba(39, 174, 96, 0.45);
+}
+
+body.theme-bayeux-blue .build-order-item:hover .build-order-link-text.local {
+    color: #7ce4a4;
+    background: rgba(39, 174, 96, 0.28);
+}
+
+/* Matchups tab: category cards, build order checklist, note items.
+   Base rules keep light backgrounds while the theme turns h4 gold. */
+body.theme-bayeux-blue .matchup-category,
+body.theme-bayeux-blue .matchup-build-orders {
+    background-color: #0a2038;
+    background-image:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 3px),
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.024) 0px, rgba(255, 255, 255, 0.024) 1px, transparent 1px, transparent 3px);
+    border-color: rgba(243, 190, 110, 0.3);
+}
+
+body.theme-bayeux-blue .matchup-category h4,
+body.theme-bayeux-blue .matchup-build-orders h4 {
+    color: #f6d080;
+    border-bottom-color: rgba(243, 190, 110, 0.4);
+}
+
+body.theme-bayeux-blue .note-item label,
+body.theme-bayeux-blue .build-order-selector label,
+body.theme-bayeux-blue .build-order-selector .group-label {
+    color: #f0d9a8;
+}
+
+body.theme-bayeux-blue .build-order-checklist {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(243, 190, 110, 0.3);
+}
+
+body.theme-bayeux-blue .matchup-build-orders .build-order-item {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+body.theme-bayeux-blue .matchup-build-orders .build-order-item:hover {
+    background: rgba(19, 53, 87, 0.8);
+}
+
+body.theme-bayeux-blue .matchup-build-orders .build-order-item label {
+    color: #e8e3d6;
+}
+
+body.theme-bayeux-blue .build-order-map-types {
+    color: #c9d4de;
+}
+
+body.theme-bayeux-blue .no-items-note {
+    color: #c9d4de;
+}
+
+/* Add note item button per category */
+.add-note-btn {
+    margin-top: 1rem;
+    align-self: flex-start;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.8rem;
+}
+
+.notes-group + .add-note-btn {
+    margin-top: 0.75rem;
+}
+
+body.theme-bayeux-blue .add-note-btn {
+    background-color: #0d2540;
+    color: #f6cc83;
+    border: 1px solid rgba(243, 190, 110, 0.5);
+}
+
+body.theme-bayeux-blue .add-note-btn:hover {
+    background-color: #133557;
+}
 
 /* Buttons follow the Civs section buttons: navy wells with gold text/border */
 body.theme-bayeux-blue .btn-primary {
