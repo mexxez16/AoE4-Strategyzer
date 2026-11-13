@@ -48,15 +48,16 @@ function toggleCustomDropdown(dropdownId) {
 
 // Populate custom dropdown options
 function populateCustomDropdownOptions(dropdownId) {
-    const optionsContainer = document.getElementById(dropdownId + '-options');
-    
-    // Clear existing options
-    optionsContainer.innerHTML = '';
-    
     // Maps list filter dropdowns keep their static options from index.html
+    // (must be checked BEFORE clearing the container!)
     if (dropdownId === 'maps-type' || dropdownId === 'maps-pool') {
         return;
     }
+
+    const optionsContainer = document.getElementById(dropdownId + '-options');
+
+    // Clear existing options
+    optionsContainer.innerHTML = '';
 
     // Handle map-select specifically - it has its own population logic
     if (dropdownId === 'map-select') {
