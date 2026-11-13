@@ -341,6 +341,78 @@ function clearMapForm() {
     currentEditingMap = null;
 }
 
+// Map pool membership management -------------------------------
+
+// Remove a map from a pool (unsets the flag; the map itself stays)
+async function toggleMapPoolMembership(mapId, pool) {
+    const map = mapsData.find(m => m.id === mapId);
+    if (!map) return;
+    if (pool === 'ranked') map.isRanked = false;
+    else if (pool === 'team-ranked') map.isTeamRanked = false;
+    else return;
+    await saveMapsData();
+    window.quickMatchMaps = getVisibleMaps();
+    displayMapPools();
+    displayAllMaps();
+}
+
+// Add / remove panel of a pool ("+ Add Map" above the pool list)
+function toggleAddMapPanel(pool) {
+    if (pool !== 'ranked' && pool !== 'team-ranked') return;
+    const panel = document.getElementById(`add-map-panel-${pool}`);
+    if (!panel) return;
+    const showing = panel.style.display !== 'none';
+    panel.style.display = showing ? 'none' : 'block';
+    if (!showing) {
+        const input = document.getElementById(`add-map-search-${pool}`);
+        if (input) {
+            input.value = '';
+            renderAddMapPoolList(pool);
+            input.focus();
+        }
+    }
+}
+
+// Render the candidate list for a pool's "+ Add Map" search: visible maps
+// NOT in the pool yet, matching the current search text
+function renderAddMapPoolList(pool) {
+    if (pool !== 'ranked' && pool !== 'team-ranked') return;
+    const list = document.getElementById(`add-map-list-${pool}`);
+    if (!list) return;
+    const searchEl = document.getElementById(`add-map-search-${pool}`);
+    const query = (searchEl ? searchEl.value : '').trim().toLowerCase();
+    const inPool = m => pool === 'ranked' ? m.isRanked : m.isTeamRanked;
+    const candidates = getVisibleMaps()
+        .filter(m => !inPool(m))
+        .filter(m => !query || m.name.toLowerCase().includes(query))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    list.innerHTML = candidates.length > 0
+        ? candidates.map(m => {
+            const typeLabel = (m.type || '').replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            return `<div class="add-map-option" onclick="window.addMapToPool('${m.id}', '${pool}')">
+                <span class="add-map-name">${m.name}</span>
+                ${typeLabel ? `<span class="add-map-type">${typeLabel}</span>` : ''}
+            </div>`;
+        }).join('')
+        : '<p class="no-maps add-map-empty">No matching maps found</p>';
+}
+
+// Add a map to a pool from the "+ Add Map" search results
+async function addMapToPool(mapId, pool) {
+    const map = mapsData.find(m => m.id === mapId);
+    if (!map || (pool !== 'ranked' && pool !== 'team-ranked')) return;
+    if (pool === 'ranked') map.isRanked = true;
+    else map.isTeamRanked = true;
+    toggleAddMapPanel(pool);
+    await saveMapsData();
+    window.quickMatchMaps = getVisibleMaps();
+    displayMapPools();
+    displayAllMaps();
+}
+
+// End map pool membership management ---------------------------
+
 // Display map pools
 function displayMapPools() {
     console.log('displayMapPools called with mapsData:', mapsData);
@@ -394,6 +466,7 @@ function createMapPoolItem(map, sectionPrefix = 'pool') {
                 </div>
                 <div class="map-pool-actions">
                     <button class="btn-secondary btn-small" onclick="event.stopPropagation(); window.toggleInlineEditMap('${map.id}', '${sectionPrefix}')">Edit</button>
+                    <button class="btn-danger btn-small pool-remove-btn" onclick="event.stopPropagation(); window.toggleMapPoolMembership('${map.id}', '${sectionPrefix}')">Remove</button>
                     <button class="btn-danger btn-small" onclick="event.stopPropagation(); window.deleteMap('${map.id}')">Delete</button>
                     <button class="map-dropdown-toggle" id="toggle-${dropdownId}">▼</button>
                 </div>
@@ -1036,6 +1109,10 @@ window.refreshMaps = refreshMaps;
 window.loadMapsData = loadMapsData;
 window.displayMapPools = displayMapPools;
 window.displayAllMaps = displayAllMaps;
+window.toggleMapPoolMembership = toggleMapPoolMembership;
+window.toggleAddMapPanel = toggleAddMapPanel;
+window.renderAddMapPoolList = renderAddMapPoolList;
+window.addMapToPool = addMapToPool;
 // Test hook: replace the in-memory maps data (jsdom test harness sets data
 // here because top-level `let` bindings are script-scoped in the harness)
 window.__setMapsData = function (arr) {

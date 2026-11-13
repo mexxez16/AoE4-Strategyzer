@@ -813,14 +813,32 @@
                 <!-- Map Pools Display -->
                 <div class="map-pools">
                     <div class="map-pool">
-                        <h3>Ranked Map Pool</h3>
+                        <div class="map-pool-head-row">
+                            <h3>Ranked Map Pool</h3>
+                            <button class="btn-secondary btn-small map-pool-add-btn" onclick="window.toggleAddMapPanel('ranked')">+ Add Map</button>
+                        </div>
+                        <div id="add-map-panel-ranked" class="add-map-panel" style="display: none;">
+                            <input type="text" id="add-map-search-ranked" class="form-input" placeholder="Search map by name..." oninput="window.renderAddMapPoolList('ranked')">
+                            <div id="add-map-list-ranked" class="add-map-list">
+                                <!-- Search results -->
+                            </div>
+                        </div>
                         <div id="ranked-map-pool" class="map-pool-list">
                             <!-- Ranked maps will be displayed here -->
                         </div>
                     </div>
                     
                     <div class="map-pool">
-                        <h3>Team Ranked Map Pool</h3>
+                        <div class="map-pool-head-row">
+                            <h3>Team Ranked Map Pool</h3>
+                            <button class="btn-secondary btn-small map-pool-add-btn" onclick="window.toggleAddMapPanel('team-ranked')">+ Add Map</button>
+                        </div>
+                        <div id="add-map-panel-team-ranked" class="add-map-panel" style="display: none;">
+                            <input type="text" id="add-map-search-team-ranked" class="form-input" placeholder="Search map by name..." oninput="window.renderAddMapPoolList('team-ranked')">
+                            <div id="add-map-list-team-ranked" class="add-map-list">
+                                <!-- Search results -->
+                            </div>
+                        </div>
                         <div id="team-ranked-map-pool" class="map-pool-list">
                             <!-- Team ranked maps will be displayed here -->
                         </div>
