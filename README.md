@@ -10,6 +10,7 @@ Desktop app for Age of Empires IV strategy management — build orders, civiliza
 
 ## Features
 
+- **Match Setup** — the core of the app: pick your civilization and the (expected) opponent, and get a thematically embedded view with opponent-specific build orders, matchup notes, map info and the matching tierlist context per matchup
 - **Build Order Library** — per-civilization build orders with creator/editors, type chips (Rush, Boom, Fast Castle, …), opponent flags, export/import and per-card export
 - **Matchup Notes** — per-opponent civilizations and map types, matchup profiles with sync from build order data
 - **Civs** — civilization profiles with editable sections (General Approach, Strengths, Weaknesses, …), embedded Match Setup and Build Order filter
