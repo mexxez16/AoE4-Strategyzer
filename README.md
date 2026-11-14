@@ -2,7 +2,7 @@
 
 # AoE4 Strategyzer
 
-<img src="Images/Title-Image-AoE4-Strategyzer.png" alt="AoE4 Strategyzer" width="640">
+<img src="Images/Title-Image-AoE4-Strategyzer.png" alt="AoE4 Strategyzer">
 
 </div>
 
@@ -75,3 +75,9 @@ CachyOS/             Linux install documentation
 ## License
 
 Released under the [MIT License](LICENSE).
+
+## Disclaimer
+
+Age of Empires IV © Microsoft Corporation.
+
+This project was created under Microsoft's ["Game Content Usage Rules"](https://www.xbox.com/en-us/developers/rules) using assets from Age of Empires IV, and it is not endorsed by or affiliated with Microsoft or Worlds Edge.
