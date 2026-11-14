@@ -1,58 +1,58 @@
 # AGENTS.md — AoE4 Strategyzer
 
-Allgemeingültige Regeln für Agenten. Sie gelten plattformübergreifend für
-Windows (Tauri NSIS/MSI-Installer) und CachyOS/Arch (PKGBUILD/Pacman-Paket).
+General rules for agents. They apply across platforms: Windows (Tauri
+NSIS/MSI installers) and CachyOS/Arch (PKGBUILD/Pacman package).
 
-## User-Data-Richtlinie (oberste Regel)
+## User-Data Policy (top rule)
 
-Vom Nutzer erstellte oder bearbeitete Inhalte gehören dem Nutzer — der
-Installer packt niemals Nutzerdaten mit und eine Installation
-überschreibt niemals welche.
+Content created or edited by the user belongs to the user — the installer
+never bundles user data, and an installation never overwrites any.
 
-### 1. Keine Nutzerdaten in den Installer / das Paket
+### 1. No user data in the installer / package
 
-Vor JEDEM Build eines Installers (Windows `tauri build`, CachyOS `makepkg`)
-sicherstellen, dass nur Factory-Default-Inhalt gepackt wird.
+Before EVERY installer build (Windows `tauri build`, CachyOS `makepkg`),
+make sure only factory-default content is packed.
 
-**Wichtig (Code-Realität):** Die App lädt die Factory-Daten per `fetch()` aus
-dem Bundle — ohne sie wären frische Installationen leer. Diese Verzeichnisse
-gehören also ins Bundle:
-- `Tauri UI/frontend/build-order-data/<civ>/*.json` — genau der Satz aus der
-  `knownBuildOrders`-Liste in `js/tauri-adapter.js`
-- `Tauri UI/frontend/matchup/*-matchups.json` — laut `knownMatchupCivs`
-- `Tauri UI/frontend/civ-data/*.json` (Fallback-Defaults)
-- `Tauri UI/frontend/maps/maps-data-default.json` (unverändert, factory)
-- Statische Assets: `Flags/`, `Icons/`, `Images/`, Code (`js/`, `style.css`,
+**Important (code reality):** The app loads factory data via `fetch()` from
+the bundle — without it, fresh installations would be empty. These
+directories therefore belong in the bundle:
+- `Tauri UI/frontend/build-order-data/<civ>/*.json` — exactly the set from
+  the `knownBuildOrders` list in `js/tauri-adapter.js`
+- `Tauri UI/frontend/matchup/*-matchups.json` — according to `knownMatchupCivs`
+- `Tauri UI/frontend/civ-data/*.json` (fallback defaults)
+- `Tauri UI/frontend/maps/maps-data-default.json` (unchanged, factory)
+- Static assets: `Flags/`, `Icons/`, `Images/`, code (`js/`, `style.css`,
   `index.html`)
 
-**Niemals packen:**
-- `Tauri UI/frontend/maps/maps-data.json` — Legacy-Fallback mit echten
-  Nutzerbearbeitungen (Notizen, Tier-Rankings); die App braucht sie nicht,
-  Defaults + APPDATA greifen ohne sie normal.
-- Alle Nutzerdateien außerhalb der Factory-Listen: Build-Orders, die nicht in
-  `knownBuildOrders` stehen, sind Nutzer-Content → aus dem Bundle entfernen.
-- Praktisch: Vor einem Build-Nutzerdaten nur in der Build-Kopie löschen,
-  niemals im Original-Arbeitsverzeichnis.
+**Never pack:**
+- `Tauri UI/frontend/maps/maps-data.json` — legacy fallback containing real
+  user edits (notes, tier rankings); the app does not need it, defaults +
+  APPDATA work fine without it.
+- All user files outside the factory lists: build orders not listed in
+  `knownBuildOrders` are user content → remove them from the bundle.
+- Practically: before a build, delete user data only in the build copy,
+  never in the original working directory.
 
-### 2. Installation überschreibt keine Nutzerdaten
+### 2. Installation never overwrites user data
 
-- Nutzerdaten liegen ausschließlich im Nutzerverzeichnis:
+- User data lives exclusively in the user directory:
   - Windows: `%APPDATA%\com.aoe4.strategyzer\`
-  - Linux/CachyOS: `~/.local/share/aoe4-strategyzer/` (bzw. `$XDG_DATA_HOME`)
-- Installer und Installationsroutinen dürfen in dieses Verzeichnis
-  **nie schreiben, umbenennen oder löschen** — auch nicht bei Updates.
-- Defaults nur **seeden, wenn die Datei noch nicht existiert**
-  (Create-if-missing, niemals Overwrite). Existiert eine Nutzerdatei, gilt
-  sie immer als wahre Version.
-- Factory-Defaults (`maps-data-default.json`, embedded Defaults) werden von
-  Updates aktualisiert und werden zusammen mit den APPDATA-Nutzerdaten
-  gemergt — Nutzeredits setzen dadurch niemals Defaults zurück.
-- Deinstallation entfernt nur globale App-Dateien (Binary, Desktop-Entry,
-  Icons), nie das Nutzerverzeichnis.
+  - Linux/CachyOS: `~/.local/share/aoe4-strategyzer/` (or `$XDG_DATA_HOME`)
+- Installers and installation routines must **never write to, rename or
+  delete** anything in this directory — including during updates.
+- Seed defaults **only when the file does not exist yet**
+  (create-if-missing, never overwrite). If a user file exists, it is always
+  the authoritative version.
+- Factory defaults (`maps-data-default.json`, embedded defaults) are updated
+  by updates and merged with the APPDATA user data — user edits therefore
+  never revert defaults.
+- Uninstallation only removes global app files (binary, desktop entry,
+  icons), never the user directory.
 
-### 3. Wenn Code oder Paketierung geändert wird
+### 3. When code or packaging changes
 
-- Neue, austauschbare Daten gehören ins Default-Schema (Binary oder
-  `*-default.json`), nicht in einen Pfad, den der Nutzer bearbeiten kann.
-- Nach Code-Änderungen prüfen, dass die Trennung "Default (read-only, aus
-  Bundle/Binary) vs. Nutzer (APPDATA, can-override)" bestehen bleibt.
+- New, replaceable data belongs in the default schema (binary or
+  `*-default.json`), not in a path the user can edit.
+- After code changes, verify that the separation between "default
+  (read-only, from bundle/binary) vs. user (APPDATA, can override)" remains
+  intact.
