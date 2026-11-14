@@ -10,13 +10,35 @@ Desktop app for Age of Empires IV strategy management — build orders, civiliza
 
 ## Features
 
-- **Match Setup** — the core of the app: pick your civilization and the (expected) opponent, and get a thematically embedded view with opponent-specific build orders, matchup notes, map info and the matching tierlist context per matchup
-- **Build Order Library** — per-civilization build orders with creator/editors, type chips (Rush, Boom, Fast Castle, …), opponent flags, export/import and per-card export
-- **Matchup Notes** — per-opponent civilizations and map types, matchup profiles with sync from build order data
-- **Civs** — civilization profiles with editable sections (General Approach, Strengths, Weaknesses, …), embedded Match Setup and Build Order filter
-- **Maps** — map pool management, map type notes and civilization tierlists (ranked / team-ranked), team-game tierlists for 2v2/3v3/4v4 with role filters
-- **Themes** — three app themes: Classic White, Parchment and Bayeux Blue (dark navy with gold headings)
-- **Data safety** — user-generated data lives outside the app and survives updates
+### Match Setup
+
+The core of the app: pick your civilization and the (expected) opponent, and get a thematically embedded view with opponent-specific build orders, matchup notes, map info and the matching tierlist context per matchup.
+
+![Match Setup](Images/Match-Setup-AoE4-Strategyzer.jpg)
+
+### Build Order Library
+
+Per-civilization build orders with creator/editors, type chips, opponent flags, export and per-card export.
+
+### Matchup Notes
+
+Per-opponent civilizations and map types, matchup profiles with sync from build order data.
+
+### Civs
+
+Civilization profiles with editable sections (General Approach, Strengths, Weaknesses, …), embedded Match Setup and Build Order filter.
+
+### Maps
+
+Map pool management, map type notes and civilization tierlists (ranked / team-ranked), team-game tierlists for 2v2/3v3/4v4 with role filters.
+
+### Themes
+
+Three app themes: Classic White, Parchment and Bayeux Blue (dark navy with gold headings).
+
+### Data Safety
+
+User-generated data lives outside the app and survives updates.
 
 ## Installation
 
