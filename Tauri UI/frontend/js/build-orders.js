@@ -803,6 +803,10 @@ function filterBuildOrders() {
             card.setAttribute('role', 'button');
             card.setAttribute('aria-label', `Open build order ${buildOrderName} (${civData.name})`);
             card.addEventListener('keydown', (e) => {
+                // Only react when the card itself is focused; keydown from
+                // inputs/textareas inside the edit form bubbles up here and
+                // must not trigger the open action.
+                if (e.target !== card) return;
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     openBuildOrder();
