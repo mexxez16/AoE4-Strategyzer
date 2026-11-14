@@ -716,7 +716,7 @@ async function loadBuildOrdersForMatchup(civId, selectedBuildOrders = []) {
                 buildOrderList.appendChild(item);
             });
         } else {
-            buildOrderList.innerHTML = '<p style="color: #666; text-align: center;">No build orders available for this civilization</p>';
+            buildOrderList.innerHTML = '<p class="no-items-note" style="text-align: center;">No build orders available for this civilization</p>';
         }
     } catch (error) {
         console.error('Error loading build orders:', error);
@@ -724,26 +724,96 @@ async function loadBuildOrdersForMatchup(civId, selectedBuildOrders = []) {
     }
 }
 
-// Populate matchup notes in text areas
-function populateMatchupNotes(matchupData) {
-    // Populate strategies
-    document.getElementById('strat1').value = matchupData.strategies?.strat1 || '';
-    document.getElementById('strat2').value = matchupData.strategies?.strat2 || '';
-    document.getElementById('strat3').value = matchupData.strategies?.strat3 || '';
-    
-    // Populate tactics
-    document.getElementById('tak1').value = matchupData.tactics?.tak1 || '';
-    document.getElementById('tak2').value = matchupData.tactics?.tak2 || '';
-    document.getElementById('tak3').value = matchupData.tactics?.tak3 || '';
-    
-    // Populate attention points
-    document.getElementById('att1').value = matchupData.attention?.att1 || '';
-    document.getElementById('att2').value = matchupData.attention?.att2 || '';
-    document.getElementById('att3').value = matchupData.attention?.att3 || '';
+// Note category config for dynamic note items
+const MATCHUP_CATEGORY_CONFIG = {
+    strategies: { prefix: 'strat', label: 'Strategy', placeholder: 'Enter strategy' },
+    tactics: { prefix: 'tak', label: 'Tactic', placeholder: 'Enter tactic' },
+    attention: { prefix: 'att', label: 'Attention', placeholder: 'Enter attention point' }
+};
+
+// Create a new note item inside a category's notes-group and return it
+function createMatchupNoteItem(category, index) {
+    const cfg = MATCHUP_CATEGORY_CONFIG[category];
+    const group = document.querySelector(`.matchup-category[data-category="${category}"] .notes-group`);
+    if (!group || !cfg) return null;
+
+    const item = document.createElement('div');
+    item.className = 'note-item';
+
+    const id = `${cfg.prefix}${index}`;
+    const label = document.createElement('label');
+    label.htmlFor = id;
+    label.textContent = `${cfg.label} ${index}`;
+
+    const textarea = document.createElement('textarea');
+    textarea.id = id;
+    textarea.className = 'matchup-note-textarea';
+    textarea.rows = 3;
+    textarea.placeholder = `${cfg.placeholder} ${index}...`;
+
+    item.appendChild(label);
+    item.appendChild(textarea);
+    group.appendChild(item);
+    return item;
 }
 
-// Clear all matchup notes
+// Add one note item to a category (button click handler)
+function addMatchupNoteItem(category) {
+    if (!MATCHUP_CATEGORY_CONFIG[category]) return;
+    const group = document.querySelector(`.matchup-category[data-category="${category}"] .notes-group`);
+    if (!group) return;
+    const item = createMatchupNoteItem(category, group.querySelectorAll('.note-item').length + 1);
+    if (item) {
+        item.querySelector('textarea').focus();
+    }
+}
+
+// Make sure a category has exactly `count` note items
+function ensureMatchupNoteItemCount(category, count) {
+    const group = document.querySelector(`.matchup-category[data-category="${category}"] .notes-group`);
+    if (!group) return;
+    while (group.querySelectorAll('.note-item').length < count) {
+        createMatchupNoteItem(category, group.querySelectorAll('.note-item').length + 1);
+    }
+    while (group.querySelectorAll('.note-item').length > count) {
+        group.querySelector('.note-item:last-of-type').remove();
+    }
+}
+
+// Read all note items of a category as {stratN: value, ...} (N = DOM position)
+function collectMatchupCategory(category) {
+    const cfg = MATCHUP_CATEGORY_CONFIG[category];
+    const out = {};
+    if (!cfg) return out;
+    document.querySelectorAll(`.matchup-category[data-category="${category}"] .note-item textarea`).forEach((textarea, i) => {
+        out[`${cfg.prefix}${i + 1}`] = textarea.value.trim();
+    });
+    return out;
+}
+
+// Populate matchup notes in text areas (creates items up to the highest data key)
+function populateMatchupNotes(matchupData) {
+    const data = matchupData || {};
+    ['strategies', 'tactics', 'attention'].forEach(category => {
+        const cfg = MATCHUP_CATEGORY_CONFIG[category];
+        const entries = data[category] || {};
+        const indices = Object.keys(entries)
+            .map(key => parseInt(key.replace(cfg.prefix, ''), 10))
+            .filter(n => !isNaN(n));
+        const required = indices.length ? Math.max(3, ...indices) : 3;
+        ensureMatchupNoteItemCount(category, required);
+
+        document.querySelectorAll(`.matchup-category[data-category="${category}"] .note-item textarea`).forEach((textarea, i) => {
+            textarea.value = entries[`${cfg.prefix}${i + 1}`] || '';
+        });
+    });
+}
+
+// Clear all matchup notes (reset to the default 3 items per category)
 function clearMatchupNotes() {
+    ['strategies', 'tactics', 'attention'].forEach(category => {
+        ensureMatchupNoteItemCount(category, 3);
+    });
     const textareas = document.querySelectorAll('.matchup-note-textarea');
     textareas.forEach(textarea => {
         textarea.value = '';
@@ -768,24 +838,12 @@ async function saveMatchupData() {
         selectedBuildOrders.push(checkbox.value);
     });
 
-    // Collect data from text areas
+    // Collect data from text areas (all note items per category, including added ones)
     const matchupNotes = {
         buildOrders: selectedBuildOrders,
-        strategies: {
-            strat1: document.getElementById('strat1').value.trim(),
-            strat2: document.getElementById('strat2').value.trim(),
-            strat3: document.getElementById('strat3').value.trim()
-        },
-        tactics: {
-            tak1: document.getElementById('tak1').value.trim(),
-            tak2: document.getElementById('tak2').value.trim(),
-            tak3: document.getElementById('tak3').value.trim()
-        },
-        attention: {
-            att1: document.getElementById('att1').value.trim(),
-            att2: document.getElementById('att2').value.trim(),
-            att3: document.getElementById('att3').value.trim()
-        }
+        strategies: collectMatchupCategory('strategies'),
+        tactics: collectMatchupCategory('tactics'),
+        attention: collectMatchupCategory('attention')
     };
 
     const fileName = `${myCivId}-matchups.json`;
@@ -848,3 +906,5 @@ window.initializeMatchup = initializeMatchup;
 window.saveMatchupData = saveMatchupData;
 window.syncMatchupsFromBuildOrders = syncMatchupsFromBuildOrders;
 window.selectMatchupCiv = selectMatchupCiv;
+window.addMatchupNoteItem = addMatchupNoteItem;
+window.populateMatchupNotes = populateMatchupNotes;

@@ -75,29 +75,50 @@ if (isTauriApp) {
     }
 
     // ============================================================================
-    // OVERRIDE loadMapsData - Use fetch for embedded maps-data.json
+    // OVERRIDE loadMapsData - merge maps-data-default.json with APPDATA user data
     // ============================================================================
 
     window.loadMapsData = async function() {
         console.log('Tauri adapter: loadMapsData called (using fetch)');
         try {
-            const data = await fetchJsonFile('maps/maps-data.json');
-            if (data) {
-                window.mapsData = data;
-                if (typeof mapsData !== 'undefined') {
-                    // Also update the module-level variable if it exists
-                    mapsData.length = 0;
-                    mapsData.push(...data);
-                }
-                window.quickMatchMaps = [...data];
-                console.log('Tauri adapter: Maps loaded via fetch:', data.length, 'maps');
-                return data;
-            } else {
-                console.log('Tauri adapter: No maps data found, using empty array');
-                window.mapsData = [];
-                window.quickMatchMaps = [];
-                return [];
+            // Defaults shipped with the app (read-only base data)
+            let defaults = [];
+            try {
+                const parsed = await fetchJsonFile('maps/maps-data-default.json');
+                if (Array.isArray(parsed)) defaults = parsed;
+            } catch (e) {
+                console.log('Tauri adapter: No default maps data found');
             }
+
+            // User data: APPDATA first, falls back to embedded maps-data.json
+            let userMaps = [];
+            const content = window.readFileSystemFile ?
+                await window.readFileSystemFile('maps', 'maps-data.json') : null;
+            if (content) {
+                try {
+                    const parsed = JSON.parse(content);
+                    if (Array.isArray(parsed)) userMaps = parsed;
+                } catch (e) {
+                    console.warn('Tauri adapter: Could not parse maps file:', e);
+                }
+            }
+
+            // User maps override defaults, missing defaults are added
+            const merged = typeof window.mergeMapData === 'function' ?
+                window.mergeMapData(defaults, userMaps) :
+                [...userMaps, ...defaults.filter(d =>
+                    !userMaps.some(m => m && m.name && d.name &&
+                        m.name.trim().toLowerCase() === d.name.trim().toLowerCase()))];
+
+            window.mapsData = merged;
+            if (typeof mapsData !== 'undefined') {
+                // Also update the module-level variable if it exists
+                mapsData.length = 0;
+                mapsData.push(...merged);
+            }
+            window.quickMatchMaps = merged.filter(m => !m.hidden);
+            console.log('Tauri adapter: Maps loaded:', merged.length, 'maps');
+            return merged;
         } catch (error) {
             console.error('Tauri adapter: Error loading maps:', error);
             window.mapsData = [];

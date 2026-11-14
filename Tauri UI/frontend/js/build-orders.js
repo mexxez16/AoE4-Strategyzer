@@ -80,7 +80,7 @@ window.showBuildOrderPreview = async function(url, civId, buildTitle) {
         }
     } else {
         // External URL - just open in new tab
-        window.open(url, '_blank');
+        openExternalUrl(url);
     }
 }
 

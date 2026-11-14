@@ -111,6 +111,21 @@
                             </div>
                             <input type="hidden" id="map-type" value="">
                         </div>
+                        <div class="setup-item">
+                            <label>Map Pool</label>
+                            <div class="custom-dropdown" id="match-pool-dropdown">
+                                <div class="dropdown-selected" onclick="toggleCustomDropdown('match-pool')">
+                                    <span id="match-pool-text">Ranked</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </div>
+                                <div class="dropdown-options" id="match-pool-options">
+                                    <div class="dropdown-option" onclick="selectMatchPool('ranked', 'Ranked')">Ranked</div>
+                                    <div class="dropdown-option" onclick="selectMatchPool('team-ranked', 'Team Ranked')">Team Ranked</div>
+                                    <div class="dropdown-option" onclick="selectMatchPool('all', 'All Pools')">All Pools</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="match-pool" value="ranked">
+                        </div>
                     </div>
                     
                     <div id="map-info-grid" class="map-info-grid hidden">
@@ -802,14 +817,6 @@
             <section id="maps" class="section">
                 <h2>Maps</h2>
                 
-                <div class="maps-settings">
-                    <div class="settings-item">
-                        <button class="btn-secondary" onclick="refreshMaps()" style="margin-left: 1rem;">
-                            🔄 Refresh Maps
-                        </button>
-                    </div>
-                </div>
-                
                 <!-- Map Pools Display -->
                 <div class="map-pools">
                     <div class="map-pool">
@@ -939,11 +946,11 @@
                                     <span class="dropdown-arrow">▼</span>
                                 </div>
                                 <div class="dropdown-options" id="maps-type-options">
-                                    <div class="dropdown-option" data-value="" onclick="selectMapsListType('', 'All Types')">All Types</div>
-                                    <div class="dropdown-option" data-value="land-open" onclick="selectMapsListType('land-open', 'Land Open')">Land Open</div>
-                                    <div class="dropdown-option" data-value="land-narrow" onclick="selectMapsListType('land-narrow', 'Land Narrow')">Land Narrow</div>
-                                    <div class="dropdown-option" data-value="hybrid" onclick="selectMapsListType('hybrid', 'Hybrid')">Hybrid</div>
-                                    <div class="dropdown-option" data-value="water" onclick="selectMapsListType('water', 'Water')">Water</div>
+                                    <div class="dropdown-option" data-value="" onclick="clearMapsListTypeFilter()">All Types</div>
+                                    <div class="dropdown-option maps-type-option" data-value="land-open" onclick="toggleMapsListTypeFilter('land-open')"><span class="option-check">✓</span>Land Open</div>
+                                    <div class="dropdown-option maps-type-option" data-value="land-narrow" onclick="toggleMapsListTypeFilter('land-narrow')"><span class="option-check">✓</span>Land Narrow</div>
+                                    <div class="dropdown-option maps-type-option" data-value="hybrid" onclick="toggleMapsListTypeFilter('hybrid')"><span class="option-check">✓</span>Hybrid</div>
+                                    <div class="dropdown-option maps-type-option" data-value="water" onclick="toggleMapsListTypeFilter('water')"><span class="option-check">✓</span>Water</div>
                                 </div>
                             </div>
                         </div>

@@ -561,7 +561,7 @@ function createMapPoolItem(map, sectionPrefix = 'pool') {
 }
 
 // Filter/sort state for the All Maps list (search text, map type, pool, sort mode)
-let mapsListFilter = { search: '', type: '', pool: '', sort: 'name-asc' };
+let mapsListFilter = { search: '', type: '', types: [], pool: '', sort: 'name-asc' };
 
 // Pure filter+sort over a map array, shared by displayAllMaps and tests
 function filterMapsForDisplay(maps, f) {
@@ -572,6 +572,9 @@ function filterMapsForDisplay(maps, f) {
     }
     if (f.type) {
         list = list.filter(m => m.type === f.type);
+    }
+    if (Array.isArray(f.types) && f.types.length) {
+        list = list.filter(m => f.types.includes(m.type));
     }
     if (f.pool === 'ranked') {
         list = list.filter(m => m.isRanked);
@@ -589,18 +592,42 @@ function filterMapsForDisplay(maps, f) {
     return list;
 }
 
-function selectMapsListType(value, label) {
-    mapsListFilter.type = value;
-    const textEl = document.getElementById('maps-type-text');
-    if (textEl) textEl.textContent = label;
-    const hidden = document.getElementById('maps-type');
-    if (hidden) hidden.value = value;
-    const options = document.getElementById('maps-type-options');
-    if (options) options.classList.remove('active');
-    const selected = document.querySelector('#maps-type-dropdown .dropdown-selected');
-    if (selected) selected.classList.remove('active');
+// Toggle one map type in the multi-select type filter (dropdown stays open)
+function toggleMapsListTypeFilter(value) {
+    const types = Array.isArray(mapsListFilter.types) ? mapsListFilter.types : [];
+    const i = types.indexOf(value);
+    if (i === -1) types.push(value); else types.splice(i, 1);
+    mapsListFilter.types = types;
+    updateMapsTypeDropdownUI();
     applyMapsListFilter();
 }
+
+// Clear all selected map types ("All Types" option)
+function clearMapsListTypeFilter() {
+    mapsListFilter.types = [];
+    updateMapsTypeDropdownUI();
+    applyMapsListFilter();
+}
+
+// Sync the type dropdown's labels, check marks and hidden value with state
+function updateMapsTypeDropdownUI() {
+    const typeLabels = { 'land-open': 'Land Open', 'land-narrow': 'Land Narrow', 'hybrid': 'Hybrid', 'water': 'Water' };
+    const types = Array.isArray(mapsListFilter.types) ? mapsListFilter.types : [];
+
+    const textEl = document.getElementById('maps-type-text');
+    if (textEl) textEl.textContent = types.length ? types.map(v => typeLabels[v] || v).join(', ') : 'All Types';
+
+    const hidden = document.getElementById('maps-type');
+    if (hidden) hidden.value = types.join(',');
+
+    document.querySelectorAll('#maps-type-options .dropdown-option').forEach(opt => {
+        opt.classList.toggle('maps-type-checked', types.includes(opt.getAttribute('data-value')));
+    });
+
+    const selected = document.querySelector('#maps-type-dropdown .dropdown-selected');
+    if (selected) selected.classList.toggle('has-selection', types.length > 0);
+}
+
 function selectMapsListPool(value, label) {
     mapsListFilter.pool = value;
     const textEl = document.getElementById('maps-pool-text');
@@ -617,8 +644,8 @@ function selectMapsListPool(value, label) {
 function applyMapsListFilter() {
     const textEl = document.getElementById('maps-filter-text');
     if (textEl) mapsListFilter.search = textEl.value.trim();
-    const typeVal = document.getElementById('maps-type');
-    if (typeVal) mapsListFilter.type = typeVal.value || '';
+    // Multi-select type filter: state lives in mapsListFilter.types (see
+    // toggleMapsListTypeFilter); the hidden input is kept in sync for other readers.
     const poolVal = document.getElementById('maps-pool');
     if (poolVal) mapsListFilter.pool = poolVal.value || '';
     const sortEl = document.getElementById('maps-sort-select');
@@ -1071,41 +1098,16 @@ function toggleMapDropdown(dropdownId) {
     toggle.classList.toggle('expanded');
 }
 
-// Refresh maps display (for debugging)
-async function refreshMaps() {
-    console.log('Refreshing maps...');
-    console.log('Current mapsData before refresh:', mapsData);
-    
-    // Clear the cache
-    mapsData = [];
-    window.quickMatchMaps = [];
-    
-    // Reload fresh data
-    await loadMapsData();
-    console.log('Maps loaded. New mapsData:', mapsData);
-    console.log('Looking for Canal:', mapsData.find(m => m.name === 'Canal'));
-    
-    // Re-display everything
-    displayMapPools();
-    displayAllMaps();
-    
-    // Also refresh Quick Match dropdown
-    if (typeof populateMapDropdown === 'function') {
-        populateMapDropdown();
-    }
-    
-    console.log('Maps refreshed successfully');
-    showNotification('Maps refreshed!', 'success');
-}
-
 // Export maps functions to global scope
 window.initializeMaps = initializeMaps;
 window.mergeMapData = mergeMapData;
+window.getVisibleMaps = getVisibleMaps;
+window.toggleMapsListTypeFilter = toggleMapsListTypeFilter;
+window.clearMapsListTypeFilter = clearMapsListTypeFilter;
 window.saveMap = saveMap;
 window.clearMapForm = clearMapForm;
 window.editMap = editMap;
 window.deleteMap = deleteMap;
-window.refreshMaps = refreshMaps;
 window.loadMapsData = loadMapsData;
 window.displayMapPools = displayMapPools;
 window.displayAllMaps = displayAllMaps;
@@ -1120,7 +1122,6 @@ window.__setMapsData = function (arr) {
     return mapsData.length;
 };
 window.filterMapsForDisplay = filterMapsForDisplay;
-window.selectMapsListType = selectMapsListType;
 window.selectMapsListPool = selectMapsListPool;
 window.applyMapsListFilter = applyMapsListFilter;
 window.toggleMapDropdown = toggleMapDropdown;

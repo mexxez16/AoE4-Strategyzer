@@ -838,6 +838,8 @@ function addExternalBuildOrder() {
     const title = document.getElementById('external-build-title').value.trim();
     const url = document.getElementById('external-build-url').value.trim();
     const notes = document.getElementById('external-build-notes').value.trim();
+    const statusSelect = document.getElementById('external-build-status');
+    const active = !statusSelect || statusSelect.value !== 'inactive';
 
     if (!civId) {
         showNotification('Please select a civilization', 'error');
@@ -908,7 +910,7 @@ function addExternalBuildOrder() {
         mapTypes: mapTypes,
         opponents: opponents,
         types: types,
-        active: true
+        active: active
     };
 
     // Save external build order

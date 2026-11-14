@@ -1,7 +1,7 @@
 # Maintainer: Max Pestemer <max.pestemer@gmail.com>
 pkgname=aoe4-strategyzer
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Strategy helper for Age of Empires IV: build orders, tierlists, matchups"
 arch=('x86_64')
 # =====================================================================

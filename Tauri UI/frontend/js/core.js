@@ -10,6 +10,37 @@ let appInitialized = false;
 // Store timeout IDs for potential cleanup
 const initializationTimeouts = [];
 
+// Open external URLs in the system browser.
+// In Tauri the webview cannot open http(s) links itself (window.open and
+// target="_blank" are inert), so this goes through the open_external_url
+// command. Falls back to window.open in browser mode.
+async function openExternalUrl(url) {
+    if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
+        try {
+            await window.__TAURI__.core.invoke('open_external_url', { url: url });
+            return true;
+        } catch (error) {
+            console.error('open_external_url failed:', error);
+            if (typeof showNotification === 'function') {
+                showNotification('Could not open link: ' + error.message, 'error');
+            }
+            return false;
+        }
+    }
+    window.open(url, '_blank');
+    return true;
+}
+window.openExternalUrl = openExternalUrl;
+
+// Route "Open Guide"/"bo-link" anchors through the system browser in Tauri mode
+document.addEventListener('click', function(event) {
+    const anchor = event.target.closest && event.target.closest('a[href^="http"]');
+    if (!anchor) return;
+    if (!(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke)) return;
+    event.preventDefault();
+    openExternalUrl(anchor.href);
+});
+
 // Navigation
 function showSection(sectionName) {
     // Update nav buttons
@@ -193,46 +224,54 @@ async function initializeQuickMatchSetup() {
 }
 
 // Load maps data for Quick Match Setup
-// TAURI: First checks APPDATA (user-saved data), then falls back to embedded assets
+// TAURI: merge maps-data-default.json with user data from APPDATA
 async function loadQuickMatchMaps() {
     try {
-        let embeddedMaps = [];
-        let appdataMaps = null;
+        let defaults = [];
 
-        // First load embedded assets (base data)
+        // Defaults shipped with the app (read-only base data)
         try {
-            const response = await fetch('maps/maps-data.json');
-            if (response.ok) {
-                embeddedMaps = JSON.parse(await response.text());
-                console.log('Loaded quick match maps from embedded assets:', embeddedMaps.length);
+            const defResponse = await fetch('maps/maps-data-default.json');
+            if (defResponse.ok) {
+                const parsedDefaults = JSON.parse(await defResponse.text());
+                if (Array.isArray(parsedDefaults)) defaults = parsedDefaults;
             }
-        } catch (fetchError) {
-            console.log('No embedded maps data found');
+        } catch (defError) {
+            console.log('No default maps data found');
         }
 
-        // Then try APPDATA via Tauri FS API (user-saved data, has priority)
+        let userMaps = [];
+
+        // User data: APPDATA first, falls back to embedded maps-data.json
         if (window.readFileSystemFile) {
             const content = await window.readFileSystemFile('maps', 'maps-data.json');
             if (content) {
                 try {
-                    appdataMaps = JSON.parse(content);
-                    console.log('Loaded quick match maps from APPDATA:', appdataMaps.length);
+                    const appdataMaps = JSON.parse(content);
+                    if (Array.isArray(appdataMaps)) userMaps = appdataMaps;
+                    console.log('Loaded quick match maps from APPDATA:', userMaps.length);
                 } catch (parseError) {
                     console.warn('Could not parse maps file from APPDATA:', parseError);
                 }
             }
         }
 
-        // Use APPDATA if available, otherwise embedded
-        if (appdataMaps && appdataMaps.length > 0) {
-            window.quickMatchMaps = appdataMaps;
-            console.log('Using quick match maps from APPDATA');
-        } else if (embeddedMaps.length > 0) {
-            window.quickMatchMaps = embeddedMaps;
-            console.log('Using quick match maps from embedded assets');
-        } else {
-            window.quickMatchMaps = [];
+        if (userMaps.length === 0) {
+            try {
+                const response = await fetch('maps/maps-data.json');
+                if (response.ok) {
+                    const embeddedMaps = JSON.parse(await response.text());
+                    if (Array.isArray(embeddedMaps)) userMaps = embeddedMaps;
+                }
+            } catch (fetchError) {
+                console.log('No embedded maps data found');
+            }
         }
+
+        // User maps override defaults, missing defaults are added
+        window.quickMatchMaps = typeof window.mergeMapData === 'function' ?
+            window.mergeMapData(defaults, userMaps).filter(m => !m.hidden) :
+            defaults.concat(userMaps.filter(m => !m.hidden));
     } catch (error) {
         console.error('Error loading quick match maps:', error);
         window.quickMatchMaps = [];
@@ -240,25 +279,67 @@ async function loadQuickMatchMaps() {
 }
 
 // Populate map dropdown in Quick Match Setup
+// Pool filter of the Quick Match Setup: 'ranked' | 'team-ranked' | 'all'.
+// Defaults to 'ranked' so the Map dropdown only shows the current pool.
+function getMatchPoolFilter() {
+    const el = document.getElementById('match-pool');
+    return el && el.value ? el.value : 'ranked';
+}
+
+// Maps of the selected pool, sorted alphabetically
+function getMatchPoolFilteredMaps() {
+    const pool = getMatchPoolFilter();
+    return (window.quickMatchMaps || []).filter(m => {
+        if (pool === 'ranked') return m.isRanked;
+        if (pool === 'team-ranked') return m.isTeamRanked;
+        return true;
+    }).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// Pool selection in Quick Match Setup
+function selectMatchPool(value, label) {
+    const el = document.getElementById('match-pool');
+    const textEl = document.getElementById('match-pool-text');
+    if (el) el.value = value;
+    if (textEl) textEl.textContent = label;
+    if (typeof closeCustomDropdown === 'function') closeCustomDropdown('match-pool');
+
+    // Reset the map selection when it is no longer part of the pool
+    const selectedId = document.getElementById('map-select')?.value;
+    if (selectedId && !getMatchPoolFilteredMaps().some(m => m.id === selectedId)) {
+        const mapHidden = document.getElementById('map-select');
+        const mapText = document.getElementById('map-select-text');
+        if (mapHidden) mapHidden.value = '';
+        if (mapText) mapText.textContent = 'Select map...';
+        hideMapInfo();
+    }
+
+    populateMapDropdown();
+    if (typeof autoGetStrategyRecommendation === 'function') {
+        autoGetStrategyRecommendation();
+    }
+}
+window.selectMatchPool = selectMatchPool;
+
 function populateMapDropdown() {
     const optionsContainer = document.getElementById('map-select-options');
     console.log('populateMapDropdown called');
     console.log('optionsContainer element found:', !!optionsContainer);
     console.log('quickMatchMaps available:', !!window.quickMatchMaps);
     console.log('maps data:', window.quickMatchMaps);
-    
+
     if (!optionsContainer) {
         console.error('Map dropdown options container not found');
         return;
     }
-    
+
     if (!window.quickMatchMaps) {
         console.error('No quick match maps data available');
         return;
     }
-    
-    // Sort maps alphabetically
-    const sortedMaps = [...window.quickMatchMaps].sort((a, b) => a.name.localeCompare(b.name));
+
+    // Only maps of the selected pool, sorted alphabetically
+    const sortedMaps = getMatchPoolFilteredMaps();
     console.log('sorted maps:', sortedMaps);
     
     // Clear existing options and add default option
@@ -593,9 +674,11 @@ function displayMatchupInfo(matchupData, buildOrderData, myCivId, opponentCivId,
     
     const strategies = [];
     if (matchupData?.strategies) {
-        if (matchupData.strategies.strat1) strategies.push({text: matchupData.strategies.strat1, number: 1});
-        if (matchupData.strategies.strat2) strategies.push({text: matchupData.strategies.strat2, number: 2});
-        if (matchupData.strategies.strat3) strategies.push({text: matchupData.strategies.strat3, number: 3});
+        Object.entries(matchupData.strategies)
+            .sort((a, b) => parseInt(a[0].replace('strat', ''), 10) - parseInt(b[0].replace('strat', ''), 10))
+            .forEach(([key, text]) => {
+                if (text) strategies.push({ text: text, number: key.replace('strat', '') });
+            });
     }
     
     if (strategies.length > 0) {
@@ -616,9 +699,11 @@ function displayMatchupInfo(matchupData, buildOrderData, myCivId, opponentCivId,
     
     const tactics = [];
     if (matchupData?.tactics) {
-        if (matchupData.tactics.tak1) tactics.push(matchupData.tactics.tak1);
-        if (matchupData.tactics.tak2) tactics.push(matchupData.tactics.tak2);
-        if (matchupData.tactics.tak3) tactics.push(matchupData.tactics.tak3);
+        Object.entries(matchupData.tactics)
+            .sort((a, b) => parseInt(a[0].replace('tak', ''), 10) - parseInt(b[0].replace('tak', ''), 10))
+            .forEach(([key, text]) => {
+                if (text) tactics.push(text);
+            });
     }
     
     if (tactics.length > 0) {
@@ -639,9 +724,11 @@ function displayMatchupInfo(matchupData, buildOrderData, myCivId, opponentCivId,
     
     const attentionPoints = [];
     if (matchupData?.attention) {
-        if (matchupData.attention.att1) attentionPoints.push(matchupData.attention.att1);
-        if (matchupData.attention.att2) attentionPoints.push(matchupData.attention.att2);
-        if (matchupData.attention.att3) attentionPoints.push(matchupData.attention.att3);
+        Object.entries(matchupData.attention)
+            .sort((a, b) => parseInt(a[0].replace('att', ''), 10) - parseInt(b[0].replace('att', ''), 10))
+            .forEach(([key, text]) => {
+                if (text) attentionPoints.push(text);
+            });
     }
     
     if (attentionPoints.length > 0) {
@@ -687,7 +774,7 @@ function createBuildOrderItemForHome(buildOrderName, details) {
             // For external URLs, open directly
             if (details.url) {
                 console.log('Opening external URL:', details.url);
-                window.open(details.url, '_blank');
+                openExternalUrl(details.url);
             } else {
                 console.error('No URL found for external build order:', buildOrderName);
             }

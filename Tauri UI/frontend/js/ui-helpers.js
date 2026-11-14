@@ -344,7 +344,7 @@ window.handleBuildOrderItemClick = function(element, event) {
         handleBuildOrderClick(url, civId, name);
     } else if (!isLocal && url) {
         console.log('✓ External URL - opening directly:', url);
-        window.open(url, '_blank');
+        openExternalUrl(url);
     } else {
         console.error('No URL found for build order:', name);
     }
@@ -419,7 +419,7 @@ window.handleBuildOrderClick = async function(url, civId, buildTitle) {
     } else if (url) {
         // External URL - just open in new tab
         console.log('✓ External URL detected, opening in new tab:', url);
-        window.open(url, '_blank');
+        openExternalUrl(url);
     } else {
         console.error('❌ No URL provided');
         showNotification('No URL available for this build order', 'error');
