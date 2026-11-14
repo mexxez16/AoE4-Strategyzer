@@ -22,15 +22,19 @@ Desktop app for Age of Empires IV strategy management — build orders, civiliza
 
 ### Windows
 
-Download the latest installer (`*_x64-setup.exe` or `.msi`) from [Releases](https://github.com/mexxez16/AoE4-Strategyzer/releases).
+Download the latest installer directly:
+
+- [**AoE4 Strategyzer Setup** (NSIS installer, recommended)](https://github.com/mexxez16/AoE4-Strategyzer/releases/latest/download/AoE4.Strategyzer_0.1.1_x64-setup.exe)
+- [**AoE4 Strategyzer** (MSI, alternative)](https://github.com/mexxez16/AoE4-Strategyzer/releases/latest/download/AoE4.Strategyzer_0.1.1_x64_en-US.msi)
+
+Or browse all files on the [Releases](https://github.com/mexxez16/AoE4-Strategyzer/releases) page.
 
 ### Arch Linux / CachyOS
 
-Build the pacman package with the included `PKGBUILD`:
+Download the [pacman package](https://github.com/mexxez16/AoE4-Strategyzer/releases/latest/download/aoe4-strategyzer-0.1.1-1-x86_64.pkg.tar.zst) and install it:
 
 ```bash
-makepkg -f
-sudo pacman -U aoe4-strategyzer-1.0.0-1-x86_64.pkg.tar.zst
+sudo pacman -U aoe4-strategyzer-0.1.1-1-x86_64.pkg.tar.zst
 ```
 
 Installs for new setups and upgrades existing ones. See [CachyOS/INSTALL.md](CachyOS/INSTALL.md) for details.
