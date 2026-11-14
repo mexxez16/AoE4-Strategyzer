@@ -1,16 +1,16 @@
-# Pacman-Paket bauen (Winch WSL auf Windows)
+# Building the pacman package (Winch WSL on Windows)
 
-Anleitung zum Bauen einer `aoe4-strategyzer-*.pkg.tar.zst`-Datei über die Winch-WSL-Distribution. Das fertige Paket ist auf jedem Arch-basierten System (z.B. CachyOS) per `pacman -U` installierbar.
+Guide for building an `aoe4-strategyzer-*.pkg.tar.zst` file using the Winch WSL distribution. The finished package can be installed on any Arch-based system (e.g. CachyOS) via `pacman -U`.
 
-## Voraussetzungen
+## Prerequisites
 
-- Windows mit WSL2 aktiviert.
-- **Winch WSL** aus dem Microsoft Store installiert.
-- Beim ersten Start in Winch: User anlegen + Passwort setzen.
+- Windows with WSL2 enabled.
+- **Winch WSL** installed from the Microsoft Store.
+- On first Winch start: create a user + set a password.
 
-## Schritt 1: System aktualisieren + Build-Dependencies
+## Step 1: Update the system + install build dependencies
 
-Im Winch-Terminal:
+In the Winch terminal:
 
 ```bash
 sudo pacman -Syu --noconfirm
@@ -18,7 +18,7 @@ sudo pacman -S --needed --noconfirm \
     base-devel webkit2gtk-4.1 gtk3 librsvg rust cargo pkgconf
 ```
 
-Falls keine Pakete signiert werden können (Keyring-Fehler):
+If packages cannot be signed/verified (keyring errors):
 
 ```bash
 sudo pacman-key --init
@@ -26,9 +26,10 @@ sudo pacman-key --populate archlinux
 sudo pacman -Syy
 ```
 
-## Schritt 2: Projekt ins Linux-Dateisystem kopieren
+## Step 2: Copy the project into the Linux file system
 
-Direkt auf `/mnt/c/...` zu bauen ist deutlich langsamer (Cross-Filesystem-Overhead) und kann zu Permission-Problemen mit `makepkg` führen. Daher kopieren:
+Building directly on `/mnt/c/...` is significantly slower (cross-filesystem
+overhead) and can cause permission problems with `makepkg`. Therefore copy:
 
 ```bash
 cp -r "/mnt/c/D Partition/Weiteres/AoE4 Strat Choice Tauri" ~/aoe4-strat
@@ -38,66 +39,74 @@ ls
 
 `ls` must show `PKGBUILD`, `Tauri UI/`, `packaging/` and `CachyOS/`.
 
-## Schritt 3: Paket bauen
+## Step 3: Build the package
 
 ```bash
 makepkg
 ```
 
-Dauer: 5–15 Min beim ersten Mal (Rust kompiliert ~150 Dependencies).
+Duration: 5–15 minutes on the first run (Rust compiles ~150 dependencies).
 
-Bei wiederholten Builds ist der Cargo-Cache warm — dann nur 1–2 Min.
+On repeated builds the cargo cache is warm — then only 1–2 minutes.
 
-Resultat:
+Result:
 
 ```bash
 ls *.pkg.tar.zst
-# → aoe4-strategyzer-1.0.0-1-x86_64.pkg.tar.zst
+# → aoe4-strategyzer-<version>-x86_64.pkg.tar.zst
 ```
 
-## Schritt 4: Datei zurück nach Windows kopieren
+## Step 4: Copy the file back to Windows
 
 ```bash
 cp aoe4-strategyzer-*.pkg.tar.zst "/mnt/c/D Partition/Weiteres/AoE4 Strat Choice Tauri/"
 ```
 
-Die `.pkg.tar.zst`-Datei kann jetzt auf CachyOS oder jedes andere Arch-System übertragen werden.
+The `.pkg.tar.zst` file can now be transferred to CachyOS or any other Arch system.
 
-## Schritt 5: Installation auf dem Zielsystem (CachyOS)
+## Step 5: Installation on the target system (CachyOS)
 
 ```bash
-sudo pacman -U aoe4-strategyzer-1.0.0-1-x86_64.pkg.tar.zst
+sudo pacman -U aoe4-strategyzer-<version>-x86_64.pkg.tar.zst
 ```
 
-Das installiert:
+This installs:
 
-- `/usr/bin/aoe4-strategyzer` — Binary
-- `/usr/share/applications/aoe4-strategyzer.desktop` — Menüeintrag
-- `/usr/share/icons/hicolor/{32,128,512}x{...}/apps/aoe4-strategyzer.png` — Icons
+- `/usr/bin/aoe4-strategyzer` — binary
+- `/usr/share/applications/aoe4-strategyzer.desktop` — menu entry
+- `/usr/share/icons/hicolor/{32,128,512}x{...}/apps/aoe4-strategyzer.png` — icons
 
-Civ-Daten landen unter `~/.local/share/aoe4-strategyzer/civ-data/`.
+User data ends up in `~/.local/share/aoe4-strategyzer/`. See
+[CachyOS/INSTALL.md](CachyOS/INSTALL.md) for the full user guide.
 
-Start aus dem Anwendungsmenü oder per `aoe4-strategyzer` im Terminal.
+Launch from the application menu or via `aoe4-strategyzer` in the terminal.
 
-## Updates: nur Quellcode geändert
+## Updates: only source code changed
 
-Nach Code-Änderungen unter Windows:
+After code changes on the Windows side:
 
 ```bash
 # In Winch:
 rm -rf ~/aoe4-strat
 cp -r "/mnt/c/D Partition/Weiteres/AoE4 Strat Choice Tauri" ~/aoe4-strat
 cd ~/aoe4-strat
-makepkg -f      # -f überschreibt das bestehende .pkg.tar.zst
+makepkg -f      # -f overwrites the existing .pkg.tar.zst
 cp aoe4-strategyzer-*.pkg.tar.zst "/mnt/c/D Partition/Weiteres/AoE4 Strat Choice Tauri/"
 ```
 
-Vor dem Re-Build die Versionsnummer in `PKGBUILD` (`pkgver=1.0.0`, `pkgrel=1`) hochzählen, sonst lehnt Pacman das alte Paket beim Re-Install ab.
+Before re-building, bump the version in `PKGBUILD` (`pkgver`, `pkgrel`),
+otherwise pacman rejects re-installing the same package version.
+
+**Never bundle user data:** before building, make sure
+`Tauri UI/frontend/maps/maps-data.json` (and any other user files) are not
+present in the copy — see [AGENTS.md](AGENTS.md) for the full user-data
+policy.
 
 ## Troubleshooting
 
 **`error: target/release/aoe4-strategyzer: No such file or directory`**
-Build hat nicht durchgelaufen. Output über die Konsole prüfen — meist eine fehlende Dependency. Nachinstallieren und `makepkg -f` nochmal.
+The build did not complete. Check the console output — usually a missing
+dependency. Install it and run `makepkg -f` again.
 
 **`one or more PGP signatures could not be verified`**
 ```bash
@@ -105,26 +114,28 @@ sudo pacman-key --refresh-keys
 ```
 
 **`error: failed to run custom build command for tauri-build`**
-Meist fehlt `webkit2gtk-4.1` oder `pkgconf`. Erneut:
+Usually `webkit2gtk-4.1` or `pkgconf` is missing. Run again:
 ```bash
 sudo pacman -S --needed webkit2gtk-4.1 pkgconf
 ```
 
 **`error: linker cc not found`**
-`base-devel` nicht vollständig:
+`base-devel` incomplete:
 ```bash
 sudo pacman -S --needed base-devel
 ```
 
-**`makepkg` läuft als root**
-Niemals mit `sudo makepkg` ausführen — `makepkg` weigert sich. Als normaler User starten.
+**`makepkg` running as root**
+Never run with `sudo makepkg` — `makepkg` refuses. Start it as a normal user.
 
-**Build extrem langsam trotz warmem Cache**
-Vermutlich wird auf `/mnt/c/...` gebaut. Immer ins Linux-Home (`~/`) kopieren (Schritt 2).
+**Build extremely slow despite warm cache**
+Probably building on `/mnt/c/...`. Always copy into the Linux home (`~/`)
+first (step 2).
 
-## Optional: Direkt in WSL testen
+## Optional: test directly in WSL
 
-Winch unterstützt grafische Anwendungen via WSLg. Du kannst das Paket dort auch installieren und testen:
+Winch supports graphical applications via WSLg. You can install and test the
+package right there:
 
 ```bash
 sudo pacman -U aoe4-strategyzer-*.pkg.tar.zst
