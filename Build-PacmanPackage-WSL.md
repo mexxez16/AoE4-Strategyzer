@@ -36,7 +36,7 @@ cd ~/aoe4-strat
 ls
 ```
 
-`ls` muss `PKGBUILD`, `Tauri UI/`, `packaging/` und `CachyOS-Install.md` zeigen.
+`ls` must show `PKGBUILD`, `Tauri UI/`, `packaging/` and `CachyOS/`.
 
 ## Schritt 3: Paket bauen
 
